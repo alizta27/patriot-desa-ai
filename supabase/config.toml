@@ -1,0 +1,7 @@
+project_id = "trjthuyukwbxrxmsverr"
+
+[functions]
+enabled = true
+
+[functions.chat-ai]
+verify_jwt = false

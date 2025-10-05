@@ -29,7 +29,7 @@ serve(async (req) => {
 
   try {
     const body = await req.json();
-    const { user_id, customer_name, customer_email, amount } = body;
+    const { user_id, customer_name, customer_email, amount, card_token } = body;
 
     if (!user_id || !customer_name || !customer_email || !amount) {
       return new Response(JSON.stringify({ error: "Data tidak lengkap" }), {
@@ -38,33 +38,93 @@ serve(async (req) => {
       });
     }
 
-    // Tanggal mulai subscription
+    // If no card token provided, return Snap token for card registration first
+    if (!card_token) {
+      // Step 1: Get Snap token for card registration
+      const snapResp = await fetch(`https://app.sandbox.midtrans.com/snap/v1/transactions`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "Basic " + btoa(MIDTRANS_SERVER_KEY + ":"),
+        },
+        body: JSON.stringify({
+          transaction_details: {
+            order_id: `CARD-REG-${Date.now()}-${user_id.substring(0, 8)}`,
+            gross_amount: 0, // 0 for card registration only
+          },
+          credit_card: {
+            secure: true,
+            save_card: true, // Important: save card for subscription
+          },
+          customer_details: {
+            first_name: customer_name,
+            email: customer_email,
+          },
+          enabled_payments: ["credit_card"],
+        }),
+      });
+
+      const snapData = await snapResp.json();
+      if (!snapResp.ok) {
+        return new Response(JSON.stringify({ error: snapData }), {
+          status: snapResp.status,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      // Return Snap token for card registration
+      return new Response(
+        JSON.stringify({
+          snap_token: snapData.token,
+          redirect_url: snapData.redirect_url,
+          step: "card_registration",
+        }),
+        {
+          status: 200,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    // Step 2: Create subscription with saved card token
     const startTime = new Date();
+    startTime.setHours(startTime.getHours() + 1); // Start 1 hour from now
     const start_time = startTime.toISOString().replace("Z", "+07:00");
 
-    // Request create subscription ke Midtrans
+    const subscriptionPayload = {
+      name: `MONTHLY_${new Date().getFullYear()}`,
+      amount: amount.toString(),
+      currency: "IDR",
+      payment_type: "credit_card",
+      token: card_token,
+      schedule: {
+        interval: 1,
+        interval_unit: "month",
+        max_interval: 12,
+        start_time: start_time,
+      },
+      retry_schedule: {
+        interval: 1,
+        interval_unit: "day",
+        max_interval: 3,
+      },
+      metadata: {
+        description: "Patriot Desa Premium Subscription",
+        user_id: user_id,
+      },
+      customer_details: {
+        first_name: customer_name,
+        email: customer_email,
+      },
+    };
+
     const resp = await fetch(`${MIDTRANS_BASE}/subscriptions`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: "Basic " + btoa(MIDTRANS_SERVER_KEY + ":"),
       },
-      body: JSON.stringify({
-        name: "Premium Subscription",
-        amount,
-        currency: "IDR",
-        interval: 1,
-        interval_unit: "month",
-        start_time,
-        payment_type: "credit_card",
-        customer_details: {
-          first_name: customer_name,
-          email: customer_email,
-        },
-        metadata: {
-          user_id: user_id,
-        },
-      }),
+      body: JSON.stringify(subscriptionPayload),
     });
 
     const data = await resp.json();
@@ -75,20 +135,34 @@ serve(async (req) => {
       });
     }
 
-    // Simpan subscription_id sementara di database
+    // Save subscription details
+    const endDate = new Date();
+    endDate.setMonth(endDate.getMonth() + 1);
+
     await supabaseAdmin
       .from("profiles")
       .update({
         last_payment_id: data.id,
         subscription_status: "premium",
+        subscription_expiry: endDate.toISOString(),
       })
       .eq("id", user_id);
 
-    // Return token + subscription_id ke frontend
+    await supabaseAdmin
+      .from("subscriptions")
+      .update({
+        plan: "premium",
+        end_date: endDate.toISOString(),
+        amount_paid: amount,
+      })
+      .eq("user_id", user_id);
+
     return new Response(
       JSON.stringify({
-        token: data.token,
+        success: true,
         subscription_id: data.id,
+        subscription_name: data.name,
+        status: data.status,
       }),
       {
         status: 200,

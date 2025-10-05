@@ -118,53 +118,93 @@ const Subscription = () => {
     try {
       // Get user info
       const { data: { user } } = await supabase.auth.getUser();
+      const customerName = user?.user_metadata?.name || user?.email?.split('@')[0] || "User";
+      const customerEmail = user?.email || "";
       
-      // Panggil Supabase Function untuk dapatkan token Snap Midtrans
-      const { data, error } = await supabase.functions.invoke(
+      // Step 1: Get Snap token for card registration
+      const { data: snapData, error: snapError } = await supabase.functions.invoke(
         "midtrans-subscription",
         {
           body: {
             user_id: userId,
-            customer_name: user?.user_metadata?.name || user?.email?.split('@')[0] || "User",
-            customer_email: user?.email || "",
+            customer_name: customerName,
+            customer_email: customerEmail,
             amount: 99000,
           },
         }
       );
 
-      if (error || !data?.token) {
+      if (snapError || !snapData?.snap_token) {
         toast.error("Gagal mendapatkan token pembayaran");
         setIsLoading(false);
         return;
       }
 
-      // Panggil Snap Midtrans
+      // Step 2: Open Snap for card registration
       if (window.snap) {
-        window.snap.pay(data.token, {
-          onSuccess: function (result: any) {
-            // toast.success("Pembayaran berhasil! Upgrade ke Premium.");
-            // Di sini kamu bisa update status subscription user di database
-            // setCurrentPlan("premium");
-            handleUpgradeInDb(result);
+        window.snap.pay(snapData.snap_token, {
+          onSuccess: async function (result: any) {
+            console.log("Card registration success:", result);
+            
+            // Get saved card token from result
+            const savedTokenId = result.saved_token_id || result.token_id;
+            
+            if (!savedTokenId) {
+              toast.error("Token kartu tidak ditemukan");
+              setIsLoading(false);
+              return;
+            }
+
+            toast.info("Membuat subscription...");
+
+            // Step 3: Create subscription with card token
+            const { data: subData, error: subError } = await supabase.functions.invoke(
+              "midtrans-subscription",
+              {
+                body: {
+                  user_id: userId,
+                  customer_name: customerName,
+                  customer_email: customerEmail,
+                  amount: 99000,
+                  card_token: savedTokenId,
+                },
+              }
+            );
+
+            if (subError || !subData?.success) {
+              toast.error("Gagal membuat subscription");
+              setIsLoading(false);
+              return;
+            }
+
+            toast.success("Subscription berhasil dibuat! Selamat datang Premium Member!");
+            setCurrentPlan("premium");
+            setTimeout(() => navigate("/chat"), 1500);
           },
-          onPending: function (result) {
+          onPending: function (result: any) {
+            console.log("Payment pending:", result);
             toast.info("Pembayaran sedang diproses.");
+            setIsLoading(false);
           },
-          onError: function (result) {
+          onError: function (result: any) {
+            console.error("Payment error:", result);
             toast.error("Pembayaran gagal.");
+            setIsLoading(false);
           },
           onClose: function () {
-            toast.info("Kamu menutup popup tanpa menyelesaikan pembayaran.");
+            toast.info("Popup ditutup.");
+            setIsLoading(false);
           },
         });
       } else {
         toast.error("Midtrans Snap belum siap.");
+        setIsLoading(false);
       }
     } catch (err) {
-      toast.error("Terjadi kesalahan saat proses pembayaran.");
+      console.error("Subscription error:", err);
+      toast.error("Terjadi kesalahan saat proses subscription.");
+      setIsLoading(false);
     }
-
-    setIsLoading(false);
   };
 
   return (

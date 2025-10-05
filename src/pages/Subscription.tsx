@@ -116,17 +116,18 @@ const Subscription = () => {
     setIsLoading(true);
 
     try {
+      // Get user info
+      const { data: { user } } = await supabase.auth.getUser();
+      
       // Panggil Supabase Function untuk dapatkan token Snap Midtrans
       const { data, error } = await supabase.functions.invoke(
-        "midtrans-token",
+        "midtrans-subscription",
         {
-          method: "POST",
           body: {
             user_id: userId,
-            order_id: `ORDER-${Date.now()}`,
-            gross_amount: 99000,
-            customer_name: "Nama Pengguna",
-            customer_email: "user@email.com",
+            customer_name: user?.user_metadata?.name || user?.email?.split('@')[0] || "User",
+            customer_email: user?.email || "",
+            amount: 99000,
           },
         }
       );

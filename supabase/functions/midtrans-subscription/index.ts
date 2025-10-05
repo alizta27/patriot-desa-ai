@@ -61,6 +61,9 @@ serve(async (req) => {
           first_name: customer_name,
           email: customer_email,
         },
+        metadata: {
+          user_id: user_id,
+        },
       }),
     });
 

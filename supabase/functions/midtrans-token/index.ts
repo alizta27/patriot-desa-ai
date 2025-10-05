@@ -67,26 +67,15 @@ serve(async (req) => {
       });
     }
 
-    const endDate = new Date();
-    endDate.setDate(endDate.getDate() + 30);
-
+    // Store token temporarily for reference
     await supabaseAdmin
       .from("profiles")
       .update({
         payment_token: snapData.token,
-        subscription_status: "premium",
       })
       .eq("id", user_id);
 
-    await supabaseAdmin
-      .from("subscriptions")
-      .update({
-        plan: "premium",
-        end_date: endDate.toISOString(),
-        amount_paid: gross_amount,
-      })
-      .eq("user_id", user_id);
-
+    // Return token - subscription will be updated via webhook after payment
     return new Response(JSON.stringify({ token: snapData.token }), {
       status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },

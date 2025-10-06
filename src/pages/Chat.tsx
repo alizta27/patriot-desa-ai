@@ -34,11 +34,20 @@ const Chat = () => {
   // React Query hooks
   const { data: subscriptionData, isLoading: isCheckingSubscription } =
     useSubscriptionStatus(userId);
+  const { setUpdatePlan, currentPlan } = usePlanStore();
   const { data: chats = [], isLoading: isLoadingChats } = useUserChats(userId);
+
   console.log({ subscriptionData });
-  const subscriptionStatus = subscriptionData?.status || "free";
+  console.log({ currentPlan });
+  const subscriptionStatus = currentPlan || "free";
   const isPremium =
     subscriptionStatus === "premium" && !subscriptionData?.expired;
+
+  useEffect(() => {
+    if (currentPlan === "free" && subscriptionData?.status === "premium") {
+      setUpdatePlan("premium");
+    }
+  }, [subscriptionData]);
 
   useEffect(() => {
     const checkAuth = async () => {

@@ -28,6 +28,7 @@ export interface PlanState {
 
   selectPlan: (plan: PlanType) => void;
   clearSelection: () => void;
+  setUpdatePlan: (plan: PlanType) => void;
 
   beginUpgrade: () => void;
   endUpgrade: () => void;
@@ -44,6 +45,8 @@ export const usePlanStore = create<PlanState>()(
     isUpgrading: false,
 
     setUserId: (userId) => set({ userId }),
+
+    setUpdatePlan: (plan: PlanType) => set({ currentPlan: plan }),
 
     setServerStatus: ({ plan, expired, expiry }) =>
       set({ currentPlan: plan, isExpired: expired, expiry }),

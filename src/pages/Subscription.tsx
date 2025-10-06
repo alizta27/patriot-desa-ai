@@ -5,6 +5,7 @@ import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -17,6 +18,7 @@ import {
   useCreateSubscription,
 } from "@/hooks/queries/subscription";
 import { usePlanStore } from "@/store/plan";
+import { cn } from "@/lib/utils";
 
 declare global {
   interface Window {
@@ -44,7 +46,7 @@ const Subscription = () => {
   const {
     setUserId: setPlanUserId,
     setServerStatus,
-    selectPlan,
+    setUpdatePlan,
     beginUpgrade,
     endUpgrade,
   } = usePlanStore();
@@ -147,6 +149,7 @@ const Subscription = () => {
                 expired: false,
                 expiry: endDate.toISOString(),
               });
+              setUpdatePlan("premium");
 
               navigate("/chat");
             } catch (e) {
@@ -245,7 +248,12 @@ const Subscription = () => {
 
         <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
           {/* Free Plan */}
-          <Card className={currentPlan === "free" ? "border-primary" : ""}>
+          <Card
+            className={cn(
+              currentPlan === "free" ? "border-primary" : "",
+              "flex flex-col justify-between"
+            )}
+          >
             <CardHeader>
               <CardTitle>Gratis</CardTitle>
               <CardDescription>Untuk mencoba</CardDescription>
@@ -269,19 +277,21 @@ const Subscription = () => {
                   <span>Riwayat chat terbatas</span>
                 </div>
               </div>
+            </CardContent>
+            <CardFooter>
               {currentPlan === "free" && (
                 <Button disabled className="w-full">
                   Paket Aktif
                 </Button>
               )}
-            </CardContent>
+            </CardFooter>
           </Card>
 
           {/* Premium Plan */}
           <Card
             className={`${
               currentPlan === "premium" ? "border-primary" : "border-primary/50"
-            } relative overflow-hidden`}
+            } relative overflow-hidden flex flex-col justify-between`}
           >
             <div className="absolute top-0 right-0 bg-primary text-primary-foreground px-3 py-1 text-sm">
               Populer
@@ -317,6 +327,8 @@ const Subscription = () => {
                   <span>Support prioritas</span>
                 </div>
               </div>
+            </CardContent>
+            <CardFooter>
               {currentPlan === "premium" && !isExpired ? (
                 <Button disabled className="w-full">
                   Paket Aktif
@@ -332,7 +344,7 @@ const Subscription = () => {
                     : "Upgrade Sekarang"}
                 </Button>
               )}
-            </CardContent>
+            </CardFooter>
           </Card>
         </div>
       </div>

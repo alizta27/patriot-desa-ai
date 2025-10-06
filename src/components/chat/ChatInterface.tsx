@@ -29,6 +29,13 @@ interface ChatInterfaceProps {
   usageCount: number;
   subscriptionStatus: "free" | "premium";
   onSendMessage: () => void;
+  onChatCreated: (chatId: string) => void;
+}
+
+function generateChatTitle(firstMessage: string): string {
+  const trimmed = firstMessage.trim();
+  if (trimmed.length <= 50) return trimmed;
+  return trimmed.slice(0, 47) + "...";
 }
 
 export function ChatInterface({
@@ -36,6 +43,7 @@ export function ChatInterface({
   usageCount,
   subscriptionStatus,
   onSendMessage,
+  onChatCreated,
 }: ChatInterfaceProps) {
   const navigate = useNavigate();
   const [messages, setMessages] = useState<Message[]>([]);
@@ -46,6 +54,14 @@ export function ChatInterface({
   useEffect(() => {
     if (chatId) {
       loadMessages(chatId);
+    }
+  }, [chatId]);
+
+  // When starting a brand new chat (no chatId), clear local messages/input
+  useEffect(() => {
+    if (!chatId) {
+      setMessages([]);
+      setInputMessage("");
     }
   }, [chatId]);
 
@@ -67,7 +83,7 @@ export function ChatInterface({
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     console.log({ inputMessage, chatId });
-    if (!inputMessage.trim() || !chatId) return;
+    if (!inputMessage.trim()) return;
 
     // Check usage limit for free users
     if (subscriptionStatus === "free" && usageCount >= 5) {
@@ -77,11 +93,32 @@ export function ChatInterface({
     console.log("show");
     setIsLoading(true);
 
+    // Ensure chat exists (create on first message)
+    let cid = chatId;
+    if (!cid) {
+      const title = generateChatTitle(inputMessage);
+      const { data: newChat, error: newChatError } = await supabase
+        .from("chats")
+        .insert({
+          user_id: (await supabase.auth.getUser()).data.user?.id,
+          title,
+        })
+        .select()
+        .single();
+      if (newChatError) {
+        toast.error("Gagal membuat chat");
+        setIsLoading(false);
+        return;
+      }
+      cid = newChat.id;
+      onChatCreated(cid);
+    }
+
     // Save user message
     const { data: userMsg, error: userError } = await supabase
       .from("chat_messages")
       .insert({
-        chat_id: chatId,
+        chat_id: cid,
         role: "user",
         message: inputMessage,
       })
@@ -122,7 +159,7 @@ export function ChatInterface({
       const { data: aiMsg, error: aiError } = await supabase
         .from("chat_messages")
         .insert({
-          chat_id: chatId,
+          chat_id: cid,
           role: "assistant",
           message: aiResponse,
         })

@@ -10,7 +10,13 @@ import {
 } from "@/components/ui/card";
 import { Check, ArrowLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { supabaseApi } from "@/lib/api";
 import { toast } from "sonner";
+import {
+  useSubscriptionStatus,
+  useCreateSubscription,
+} from "@/hooks/queries/subscription";
+import { usePlanStore } from "@/store/plan";
 
 declare global {
   interface Window {
@@ -18,12 +24,8 @@ declare global {
   }
 }
 
-// Tambahkan script Snap Midtrans
+// Load Midtrans Snap script
 const loadMidtransScript = () => {
-  console.log(
-    "VITE_MIDTRANS_CLIENT_KEY",
-    import.meta.env.VITE_MIDTRANS_CLIENT_KEY
-  );
   if (document.getElementById("midtrans-script")) return;
   const script = document.createElement("script");
   script.id = "midtrans-script";
@@ -38,8 +40,23 @@ const loadMidtransScript = () => {
 const Subscription = () => {
   const navigate = useNavigate();
   const [userId, setUserId] = useState<string | null>(null);
-  const [currentPlan, setCurrentPlan] = useState<"free" | "premium">("free");
   const [isLoading, setIsLoading] = useState(false);
+  const {
+    setUserId: setPlanUserId,
+    setServerStatus,
+    selectPlan,
+    beginUpgrade,
+    endUpgrade,
+  } = usePlanStore();
+
+  // React Query hooks
+  const { data: subscriptionData, isLoading: isCheckingSubscription } =
+    useSubscriptionStatus(userId);
+  const createSubscriptionMutation = useCreateSubscription();
+
+  const currentPlan = subscriptionData?.status || "free";
+  const subscriptionExpiry = subscriptionData?.expiry || null;
+  const isExpired = subscriptionData?.expired || false;
 
   useEffect(() => {
     loadMidtransScript();
@@ -54,158 +71,148 @@ const Subscription = () => {
       }
 
       setUserId(session.user.id);
-
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("subscription_status")
-        .eq("id", session.user.id)
-        .single();
-
-      if (profile) {
-        setCurrentPlan(profile.subscription_status as "free" | "premium");
-      }
+      setPlanUserId(session.user.id);
     };
     checkAuth();
   }, [navigate]);
 
-  const handleUpgradeInDb = async (tokenData: any) => {
-    if (!userId) return;
-    console.log({ tokenData });
-    // setIsLoading(true);
+  // Sync server status into plan store for cross-page availability
+  useEffect(() => {
+    if (subscriptionData) {
+      setServerStatus({
+        plan: (subscriptionData.status as "free" | "premium") || "free",
+        expired: !!subscriptionData.expired,
+        expiry: subscriptionData.expiry || null,
+      });
+    }
+  }, [subscriptionData, setServerStatus]);
 
-    // // Mock upgrade - in production this would integrate with payment gateway
-    // const { error: profileError } = await supabase
-    //   .from("profiles")
-    //   .update({ subscription_status: "premium" })
-    //   .eq("id", userId);
-
-    // if (profileError) {
-    //   toast.error("Gagal upgrade ke Premium");
-    //   setIsLoading(false);
-    //   return;
-    // }
-
-    // const endDate = new Date();
-    // endDate.setMonth(endDate.getMonth() + 1);
-
-    // const { error: subError } = await supabase
-    //   .from("subscriptions")
-    //   .update({
-    //     plan: "premium",
-    //     end_date: endDate.toISOString(),
-    //     amount_paid: 99000,
-    //   })
-    //   .eq("user_id", userId);
-
-    // if (subError) {
-    //   toast.error("Gagal menyimpan data subscription");
-    //   setIsLoading(false);
-    //   return;
-    // }
-
-    toast.success("Berhasil upgrade ke Premium!");
-    setCurrentPlan("premium");
-    // setIsLoading(false);
-    navigate("/chat");
-  };
-
-  // Fungsi untuk handle upgrade dengan Midtrans
+  // Handle upgrade with React Query
   const handleUpgrade = async () => {
     if (!userId) return;
-
     setIsLoading(true);
+    beginUpgrade();
 
     try {
-      // Get user info
-      const { data: { user } } = await supabase.auth.getUser();
-      const customerName = user?.user_metadata?.name || user?.email?.split('@')[0] || "User";
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      const customerName =
+        user?.user_metadata?.name || user?.email?.split("@")[0] || "User";
       const customerEmail = user?.email || "";
-      
-      // Step 1: Get Snap token for card registration
-      const { data: snapData, error: snapError } = await supabase.functions.invoke(
-        "midtrans-subscription",
-        {
-          body: {
-            user_id: userId,
-            customer_name: customerName,
-            customer_email: customerEmail,
-            amount: 99000,
-          },
-        }
-      );
 
-      if (snapError || !snapData?.snap_token) {
+      // Use React Query mutation
+      const data = await createSubscriptionMutation.mutateAsync({
+        user_id: userId,
+        customer_name: customerName,
+        customer_email: customerEmail,
+      });
+
+      if (!data?.snap_token) {
         toast.error("Gagal mendapatkan token pembayaran");
         setIsLoading(false);
+        endUpgrade();
         return;
       }
 
-      // Step 2: Open Snap for card registration
+      // Open Snap for payment
       if (window.snap) {
-        window.snap.pay(snapData.snap_token, {
+        window.snap.pay(data.snap_token, {
           onSuccess: async function (result: any) {
-            console.log("Card registration success:", result);
-            
-            // Get saved card token from result
-            const savedTokenId = result.saved_token_id || result.token_id;
-            
-            if (!savedTokenId) {
-              toast.error("Token kartu tidak ditemukan");
+            console.log("Payment success:", result);
+            toast.success("Pembayaran berhasil! Mengaktifkan Premium...");
+
+            try {
+              const endDate = new Date();
+              endDate.setMonth(endDate.getMonth() + 1);
+
+              // Update profile
+              await supabaseApi.updateProfile(userId, {
+                subscription_status: "premium",
+                subscription_expiry: endDate.toISOString(),
+                last_payment_id: result?.order_id || null,
+              });
+
+              // Upsert subscriptions
+              await supabaseApi.createOrUpdateSubscription({
+                user_id: userId,
+                plan: "premium",
+                end_date: endDate.toISOString(),
+                amount_paid: Number(result?.gross_amount) || 99000,
+              });
+
+              // Update store immediately
+              setServerStatus({
+                plan: "premium",
+                expired: false,
+                expiry: endDate.toISOString(),
+              });
+
+              navigate("/chat");
+            } catch (e) {
+              console.error("Activate premium failed:", e);
+              toast.error(
+                "Aktivasi gagal disimpan. Coba buka Chat atau refresh."
+              );
+            } finally {
               setIsLoading(false);
-              return;
+              endUpgrade();
             }
-
-            toast.info("Membuat subscription...");
-
-            // Step 3: Create subscription with card token
-            const { data: subData, error: subError } = await supabase.functions.invoke(
-              "midtrans-subscription",
-              {
-                body: {
-                  user_id: userId,
-                  customer_name: customerName,
-                  customer_email: customerEmail,
-                  amount: 99000,
-                  card_token: savedTokenId,
-                },
-              }
-            );
-
-            if (subError || !subData?.success) {
-              toast.error("Gagal membuat subscription");
-              setIsLoading(false);
-              return;
-            }
-
-            toast.success("Subscription berhasil dibuat! Selamat datang Premium Member!");
-            setCurrentPlan("premium");
-            setTimeout(() => navigate("/chat"), 1500);
           },
           onPending: function (result: any) {
             console.log("Payment pending:", result);
             toast.info("Pembayaran sedang diproses.");
             setIsLoading(false);
+            endUpgrade();
           },
           onError: function (result: any) {
             console.error("Payment error:", result);
             toast.error("Pembayaran gagal.");
             setIsLoading(false);
+            endUpgrade();
           },
           onClose: function () {
+            console.log("Payment popup closed");
             toast.info("Popup ditutup.");
             setIsLoading(false);
+            endUpgrade();
           },
         });
       } else {
         toast.error("Midtrans Snap belum siap.");
         setIsLoading(false);
+        endUpgrade();
       }
     } catch (err) {
       console.error("Subscription error:", err);
-      toast.error("Terjadi kesalahan saat proses subscription.");
+      toast.error("Terjadi kesalahan saat membuat subscription");
       setIsLoading(false);
+      endUpgrade();
     }
   };
+
+  // Format expiry date for display
+  const formatExpiryDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString("id-ID", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  };
+
+  if (isCheckingSubscription) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-background to-primary-light/20 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-4 text-muted-foreground">
+            Loading subscription status...
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-primary-light/20">
@@ -224,6 +231,16 @@ const Subscription = () => {
           <p className="text-muted-foreground">
             Upgrade ke Premium untuk akses unlimited
           </p>
+          {currentPlan === "premium" && subscriptionExpiry && !isExpired && (
+            <p className="text-sm text-green-600 mt-2">
+              Premium aktif hingga: {formatExpiryDate(subscriptionExpiry)}
+            </p>
+          )}
+          {isExpired && (
+            <p className="text-sm text-red-600 mt-2">
+              Subscription Anda telah berakhir
+            </p>
+          )}
         </div>
 
         <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
@@ -274,7 +291,7 @@ const Subscription = () => {
               <CardDescription>Untuk pengguna aktif</CardDescription>
               <div className="mt-4">
                 <span className="text-3xl font-bold">Rp 99.000</span>
-                <span className="text-muted-foreground">/bulan</span>
+                <span className="text-muted-foreground">/30 hari</span>
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -300,17 +317,19 @@ const Subscription = () => {
                   <span>Support prioritas</span>
                 </div>
               </div>
-              {currentPlan === "premium" ? (
+              {currentPlan === "premium" && !isExpired ? (
                 <Button disabled className="w-full">
                   Paket Aktif
                 </Button>
               ) : (
                 <Button
                   onClick={handleUpgrade}
-                  disabled={isLoading}
+                  disabled={isLoading || createSubscriptionMutation.isPending}
                   className="w-full bg-primary hover:bg-primary-dark"
                 >
-                  {isLoading ? "Memproses..." : "Upgrade Sekarang"}
+                  {isLoading || createSubscriptionMutation.isPending
+                    ? "Memproses..."
+                    : "Upgrade Sekarang"}
                 </Button>
               )}
             </CardContent>

@@ -29,40 +29,44 @@ serve(async (req) => {
 
   try {
     const body = await req.json();
-    const { user_id, customer_name, customer_email, amount, card_token } = body;
-
-    if (!user_id || !customer_name || !customer_email || !amount) {
+    const amount = 99000;
+    const { user_id, customer_name, customer_email, card_token } = body;
+    if (!user_id || !customer_name || !customer_email) {
       return new Response(JSON.stringify({ error: "Data tidak lengkap" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    // If no card token provided, return Snap token for card registration first
+    // If no card token provided, return Snap token for first payment
     if (!card_token) {
-      // Step 1: Get Snap token for card registration
-      const snapResp = await fetch(`https://app.sandbox.midtrans.com/snap/v1/transactions`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: "Basic " + btoa(MIDTRANS_SERVER_KEY + ":"),
-        },
-        body: JSON.stringify({
-          transaction_details: {
-            order_id: `CARD-REG-${Date.now()}-${user_id.substring(0, 8)}`,
-            gross_amount: 0, // 0 for card registration only
+      // Step 1: Get Snap token for first payment (full amount)
+      const snapResp = await fetch(
+        `https://app.sandbox.midtrans.com/snap/v1/transactions`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: "Basic " + btoa(MIDTRANS_SERVER_KEY + ":"),
           },
-          credit_card: {
-            secure: true,
-            save_card: true, // Important: save card for subscription
-          },
-          customer_details: {
-            first_name: customer_name,
-            email: customer_email,
-          },
-          enabled_payments: ["credit_card"],
-        }),
-      });
+          body: JSON.stringify({
+            transaction_details: {
+              order_id: `FIRST-PAY-${Date.now()}-${user_id.substring(0, 8)}`,
+              gross_amount: amount.toString(), // Full amount for first payment
+            },
+            credit_card: {
+              secure: true,
+              save_card: true, // Important: save card for subscription
+            },
+            customer_details: {
+              first_name: customer_name,
+              email: customer_email,
+            },
+            enabled_payments: ["credit_card"],
+            custom_field1: user_id, // For webhook tracking
+          }),
+        }
+      );
 
       const snapData = await snapResp.json();
       if (!snapResp.ok) {
@@ -72,12 +76,12 @@ serve(async (req) => {
         });
       }
 
-      // Return Snap token for card registration
+      // Return Snap token for first payment
       return new Response(
         JSON.stringify({
           snap_token: snapData.token,
           redirect_url: snapData.redirect_url,
-          step: "card_registration",
+          step: "first_payment",
         }),
         {
           status: 200,
@@ -97,6 +101,7 @@ serve(async (req) => {
       currency: "IDR",
       payment_type: "credit_card",
       token: card_token,
+      custom_field1: user_id, // Add user_id for webhook tracking
       schedule: {
         interval: 1,
         interval_unit: "month",

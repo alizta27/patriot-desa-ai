@@ -244,7 +244,7 @@ const Chat = () => {
 
   if (isCheckingSubscription) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-background to-primary-light/20 flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary mx-auto"></div>
           <p className="mt-4 text-muted-foreground">Loading chat...</p>
@@ -255,7 +255,7 @@ const Chat = () => {
 
   return (
     <SidebarProvider>
-      <div className="flex h-screen w-screen bg-gradient-to-b from-background to-primary-light/20 overflow-hidden">
+      <div className="flex h-screen w-screen bg-background overflow-hidden">
         {/* Mobile hamburger to open sidebar */}
         <div className="absolute top-3 left-3 md:hidden z-10">
           <Button variant="ghost" size="icon" onClick={openSidebar}>

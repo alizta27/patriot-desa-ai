@@ -8,7 +8,7 @@ import { appLogo } from "@/assets/images";
 
 const Index = () => {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-primary-light/20">
+    <div className="min-h-screen bg-background">
       <Header />
       {/* Hero Section */}
       <section className="container mx-auto px-4 py-20">
@@ -18,7 +18,7 @@ const Index = () => {
             alt="Patriot Desa logo"
             className="h-20 w-auto mb-6 md:h-28"
           />
-          <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+          <h1 className="text-5xl md:text-6xl font-bold mb-6 text-[hsl(var(--secondary))]">
             Patriot Desa
           </h1>
           <p className="text-xl md:text-2xl text-muted-foreground mb-8">
@@ -33,7 +33,7 @@ const Index = () => {
             <Link to="/login">
               <Button
                 size="lg"
-                className="bg-primary hover:bg-primary-dark text-primary-foreground"
+                className="bg-primary hover:bg-[hsl(var(--primary-dark))] text-primary-foreground"
               >
                 Mulai Sekarang
               </Button>
@@ -80,8 +80,8 @@ const Index = () => {
       <section className="container mx-auto px-4 py-16">
         <h2 className="text-3xl font-bold text-center mb-12">Fitur Unggulan</h2>
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
-          <Card className="p-6 hover:shadow-lg transition-shadow border-primary/20">
-            <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
+          <Card className="p-6 hover:shadow-lg transition-shadow border-[hsl(var(--primary))]/20">
+            <div className="w-12 h-12 bg-[hsl(var(--primary))]/10 rounded-lg flex items-center justify-center mb-4">
               <MessageSquare className="w-6 h-6 text-primary" />
             </div>
             <h3 className="text-xl font-semibold mb-2">AI Assistant</h3>
@@ -90,8 +90,8 @@ const Index = () => {
             </p>
           </Card>
 
-          <Card className="p-6 hover:shadow-lg transition-shadow border-primary/20">
-            <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
+          <Card className="p-6 hover:shadow-lg transition-shadow border-[hsl(var(--primary))]/20">
+            <div className="w-12 h-12 bg-[hsl(var(--primary))]/10 rounded-lg flex items-center justify-center mb-4">
               <Sparkles className="w-6 h-6 text-primary" />
             </div>
             <h3 className="text-xl font-semibold mb-2">Freemium Model</h3>
@@ -100,8 +100,8 @@ const Index = () => {
             </p>
           </Card>
 
-          <Card className="p-6 hover:shadow-lg transition-shadow border-primary/20">
-            <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
+          <Card className="p-6 hover:shadow-lg transition-shadow border-[hsl(var(--primary))]/20">
+            <div className="w-12 h-12 bg-[hsl(var(--primary))]/10 rounded-lg flex items-center justify-center mb-4">
               <Users className="w-6 h-6 text-primary" />
             </div>
             <h3 className="text-xl font-semibold mb-2">Premium Subscription</h3>
@@ -110,8 +110,8 @@ const Index = () => {
             </p>
           </Card>
 
-          <Card className="p-6 hover:shadow-lg transition-shadow border-primary/20">
-            <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
+          <Card className="p-6 hover:shadow-lg transition-shadow border-[hsl(var(--primary))]/20">
+            <div className="w-12 h-12 bg-[hsl(var(--primary))]/10 rounded-lg flex items-center justify-center mb-4">
               <HeadphonesIcon className="w-6 h-6 text-primary" />
             </div>
             <h3 className="text-xl font-semibold mb-2">Human Consultant</h3>
@@ -126,7 +126,7 @@ const Index = () => {
       <section id="pricing" className="container mx-auto px-4 py-16">
         <h2 className="text-3xl font-bold text-center mb-12">Harga</h2>
         <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-          <Card className="p-8 border-primary/20 flex flex-col justify-between">
+          <Card className="p-8 border-[hsl(var(--primary))]/20 flex flex-col justify-between">
             <div>
               <h3 className="text-2xl font-bold mb-4">Gratis</h3>
               <p className="text-4xl font-bold mb-6 text-primary">Rp 0</p>
@@ -149,7 +149,7 @@ const Index = () => {
             </Link>
           </Card>
 
-          <Card className="p-8 border-primary bg-primary/5 flex flex-col justify-between">
+          <Card className="p-8 border-[hsl(var(--primary))] bg-[hsl(var(--primary))]/5 flex flex-col justify-between">
             <div>
               <h3 className="text-2xl font-bold mb-4">Premium</h3>
               <p className="text-4xl font-bold mb-6 text-primary">
@@ -212,7 +212,7 @@ const Index = () => {
 
       {/* CTA Section */}
       <section className="container mx-auto px-4 py-16">
-        <div className="bg-gradient-to-r from-primary to-accent rounded-2xl p-12 text-center">
+        <div className="bg-[hsl(var(--secondary))] rounded-2xl p-12 text-center">
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
             Siap Mengembangkan Desa Anda?
           </h2>

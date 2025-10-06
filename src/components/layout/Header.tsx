@@ -19,9 +19,7 @@ const Header = () => {
             alt="Patriot Desa logo"
             className="h-8 w-auto md:h-9"
           />
-          <span className="text-xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-            Patriot Desa
-          </span>
+          <span className="text-xl font-bold text-primary">Patriot Desa</span>
         </Link>
 
         <nav className="hidden md:flex items-center gap-6">

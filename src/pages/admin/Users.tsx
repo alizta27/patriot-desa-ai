@@ -2,7 +2,14 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, RefreshCw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -23,15 +30,17 @@ const Users = () => {
 
   useEffect(() => {
     const checkAdmin = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
       if (!session) {
         navigate("/login");
         return;
       }
 
-      const { data: hasAdminRole } = await supabase.rpc('has_role', {
+      const { data: hasAdminRole } = await supabase.rpc("has_role", {
         _user_id: session.user.id,
-        _role: 'admin'
+        _role: "admin",
       });
 
       if (!hasAdminRole) {
@@ -78,14 +87,17 @@ const Users = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-primary-light/20">
+    <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-3xl font-bold mb-2">Kelola Pengguna</h1>
             <p className="text-muted-foreground">Manajemen pengguna platform</p>
           </div>
-          <Button variant="outline" onClick={() => navigate("/admin/dashboard")}>
+          <Button
+            variant="outline"
+            onClick={() => navigate("/admin/dashboard")}
+          >
             <ArrowLeft className="mr-2 h-4 w-4" />
             Kembali
           </Button>
@@ -117,7 +129,13 @@ const Users = () => {
                         <Badge variant="outline">{user.role}</Badge>
                       </TableCell>
                       <TableCell>
-                        <Badge variant={user.subscription_status === 'premium' ? 'default' : 'secondary'}>
+                        <Badge
+                          variant={
+                            user.subscription_status === "premium"
+                              ? "default"
+                              : "secondary"
+                          }
+                        >
                           {user.subscription_status}
                         </Badge>
                       </TableCell>

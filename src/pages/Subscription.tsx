@@ -206,7 +206,7 @@ const Subscription = () => {
 
   if (isCheckingSubscription) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-background to-primary-light/20 flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary mx-auto"></div>
           <p className="mt-4 text-muted-foreground">
@@ -218,7 +218,7 @@ const Subscription = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-primary-light/20">
+    <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
         <Button
           variant="ghost"

@@ -217,26 +217,14 @@ export function ChatInterface({
             </div>
           ) : (
             messages.map((msg) => (
-              <Card
+              <div
                 key={msg.id}
                 className={`p-4 ${
                   msg.role === "user"
-                    ? "ml-auto bg-primary text-primary-foreground max-w-[80%]"
-                    : "mr-auto bg-card max-w-[80%]"
+                    ? "ml-auto bg-accent/10 text-accent max-w-[80%] rounded-lg"
+                    : "mr-auto bg-white w-full"
                 }`}
               >
-                {/* <p className="text-sm whitespace-pre-wrap">{msg.message}</p> */}
-                {/* <ReactMarkdown
-                  remarkPlugins={[remarkGfm]}
-                  className="prose prose-sm dark:prose-invert max-w-none"
-                >
-                  {msg.message}
-                </ReactMarkdown> */}
-                {/* <ReactMarkdown
-                  remarkPlugins={[remarkGfm]}
-                  components={{}}
-                  children={msg.message}
-                /> */}
                 {msg.role === "assistant" ? (
                   <div className="prose prose-sm dark:prose-invert max-w-none">
                     <ReactMarkdown
@@ -253,7 +241,7 @@ export function ChatInterface({
                 ) : (
                   <p className="text-sm whitespace-pre-wrap">{msg.message}</p>
                 )}
-              </Card>
+              </div>
             ))
           )}
           {isLoading && (

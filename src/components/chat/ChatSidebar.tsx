@@ -170,8 +170,8 @@ export function ChatSidebar({
                       key={chat.id}
                       className={`group flex items-center justify-between px-3 py-2 rounded-md cursor-pointer transition-colors ${
                         active
-                          ? "bg-sidebar-accent text-sidebar-foreground"
-                          : "hover:bg-sidebar-accent/60"
+                          ? "bg-sidebar-accent/40"
+                          : "hover:bg-sidebar-accent/40"
                       }`}
                       onClick={() => onSelectChat(chat.id)}
                     >

@@ -4,6 +4,7 @@ import { MessageSquare, Users, Sparkles, HeadphonesIcon } from "lucide-react";
 import { Link } from "react-router-dom";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
+import { appLogo } from "@/assets/images";
 
 const Index = () => {
   return (
@@ -11,7 +12,12 @@ const Index = () => {
       <Header />
       {/* Hero Section */}
       <section className="container mx-auto px-4 py-20">
-        <div className="text-center max-w-4xl mx-auto">
+        <div className="max-w-5xl mx-auto flex flex-col items-center text-center">
+          <img
+            src={appLogo}
+            alt="Patriot Desa logo"
+            className="h-20 w-auto mb-6 md:h-28"
+          />
           <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
             Patriot Desa
           </h1>

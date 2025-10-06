@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { Instagram, MessageCircle, Youtube } from "lucide-react";
+import { appLogo } from "@/assets/images";
 
 const Footer = () => {
   const scrollToSection = (sectionId: string) => {
@@ -12,22 +13,37 @@ const Footer = () => {
   return (
     <footer className="bg-muted/50 border-t border-border">
       <div className="container mx-auto px-4 py-12">
+        <div className="flex items-center justify-center md:justify-start mb-8">
+          <img
+            src={appLogo}
+            alt="Patriot Desa logo"
+            className="h-8 w-auto md:h-10"
+          />
+        </div>
         <div className="grid md:grid-cols-3 gap-8">
           {/* About Section */}
           <div>
-            <h3 className="text-lg font-semibold mb-4 text-foreground">Tentang</h3>
+            <h3 className="text-lg font-semibold mb-4 text-foreground">
+              Tentang
+            </h3>
             <p className="text-muted-foreground text-sm">
-              Patriot Desa adalah asisten cerdas yang membantu aparatur desa, pendamping, BUMDes, 
-              dan masyarakat umum dalam mengelola dan mengembangkan desa menjadi lebih maju.
+              Patriot Desa adalah asisten cerdas yang membantu aparatur desa,
+              pendamping, BUMDes, dan masyarakat umum dalam mengelola dan
+              mengembangkan desa menjadi lebih maju.
             </p>
           </div>
 
           {/* Quick Links */}
           <div>
-            <h3 className="text-lg font-semibold mb-4 text-foreground">Tautan Cepat</h3>
+            <h3 className="text-lg font-semibold mb-4 text-foreground">
+              Tautan Cepat
+            </h3>
             <ul className="space-y-2 text-sm">
               <li>
-                <Link to="/" className="text-muted-foreground hover:text-primary transition-colors">
+                <Link
+                  to="/"
+                  className="text-muted-foreground hover:text-primary transition-colors"
+                >
                   Home
                 </Link>
               </li>
@@ -56,7 +72,10 @@ const Footer = () => {
                 </button>
               </li>
               <li>
-                <Link to="/privacy-policy" className="text-muted-foreground hover:text-primary transition-colors">
+                <Link
+                  to="/privacy-policy"
+                  className="text-muted-foreground hover:text-primary transition-colors"
+                >
                   Privacy Policy
                 </Link>
               </li>
@@ -65,7 +84,9 @@ const Footer = () => {
 
           {/* Contact */}
           <div>
-            <h3 className="text-lg font-semibold mb-4 text-foreground">Kontak</h3>
+            <h3 className="text-lg font-semibold mb-4 text-foreground">
+              Kontak
+            </h3>
             <p className="text-muted-foreground text-sm mb-4">
               Email: info@patriotdesa.com
             </p>

@@ -92,7 +92,7 @@ export function ChatSidebar({
     <Sidebar className="border-r border-sidebar-border">
       <SidebarContent>
         {/* Header with logo and toggle */}
-        <div className="px-3 py-3 flex items-center gap-2 border-b border-sidebar-border">
+        <div className="px-3 py-4 flex items-center gap-2 border-b border-sidebar-border">
           <div className="h-7 w-7 rounded-md bg-primary/10 flex items-center justify-center text-primary font-semibold">
             PD
           </div>

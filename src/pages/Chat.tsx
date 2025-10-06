@@ -35,7 +35,7 @@ const Chat = () => {
   const { data: subscriptionData, isLoading: isCheckingSubscription } =
     useSubscriptionStatus(userId);
   const { data: chats = [], isLoading: isLoadingChats } = useUserChats(userId);
-
+  console.log({ subscriptionData });
   const subscriptionStatus = subscriptionData?.status || "free";
   const isPremium =
     subscriptionStatus === "premium" && !subscriptionData?.expired;
@@ -153,7 +153,7 @@ const Chat = () => {
     if (!userId) return;
 
     // Check usage limit for free users
-    if (subscriptionStatus === "free" && usageCount >= 5) {
+    if (!isPremium && usageCount >= 5) {
       toast.error(
         "Anda telah mencapai batas penggunaan harian. Upgrade ke Premium untuk akses unlimited!"
       );
@@ -198,7 +198,7 @@ const Chat = () => {
       });
 
       // Update usage count for free users
-      if (subscriptionStatus === "free") {
+      if (!isPremium) {
         const newUsageCount = usageCount + 1;
         setUsageCount(newUsageCount);
 

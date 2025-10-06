@@ -1,19 +1,20 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { supabaseApi } from '@/lib/api';
-import { toast } from 'sonner';
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { supabaseApi } from "@/lib/api";
+import { toast } from "sonner";
+import { subscriptionKeys } from "./subscription";
 
 // Query keys
 export const profileKeys = {
-  all: ['profile'] as const,
-  detail: (userId: string) => [...profileKeys.all, 'detail', userId] as const,
+  all: ["profile"] as const,
+  detail: (userId: string) => [...profileKeys.all, "detail", userId] as const,
 };
 
 // Get user profile
 export const useProfile = (userId: string | null) => {
   return useQuery({
-    queryKey: profileKeys.detail(userId || ''),
+    queryKey: profileKeys.detail(userId || ""),
     queryFn: async () => {
-      if (!userId) throw new Error('User ID is required');
+      if (!userId) throw new Error("User ID is required");
       const { data, error } = await supabaseApi.getProfile(userId);
       if (error) throw error;
       return data;
@@ -26,7 +27,7 @@ export const useProfile = (userId: string | null) => {
 // Update user profile
 export const useUpdateProfile = () => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: async ({ userId, data }: { userId: string; data: any }) => {
       const { error } = await supabaseApi.updateProfile(userId, data);
@@ -35,21 +36,27 @@ export const useUpdateProfile = () => {
     },
     onSuccess: (data, variables) => {
       // Update the cache with new data
-      queryClient.setQueryData(profileKeys.detail(variables.userId), (old: any) => ({
-        ...old,
-        ...data,
-      }));
-      
+      queryClient.setQueryData(
+        profileKeys.detail(variables.userId),
+        (old: any) => ({
+          ...old,
+          ...data,
+        })
+      );
+
       // Invalidate to refetch
-      queryClient.invalidateQueries({ 
-        queryKey: profileKeys.detail(variables.userId) 
+      queryClient.invalidateQueries({
+        queryKey: profileKeys.detail(variables.userId),
       });
-      
-      toast.success('Profile updated successfully');
+      queryClient.invalidateQueries({
+        queryKey: subscriptionKeys.status(variables.userId),
+      });
+
+      toast.success("Profile updated successfully");
     },
     onError: (error: any) => {
-      console.error('Update profile error:', error);
-      toast.error('Failed to update profile');
+      console.error("Update profile error:", error);
+      toast.error("Failed to update profile");
     },
   });
 };

@@ -45,16 +45,16 @@ const Login = () => {
         data: { session },
       } = await supabase.auth.getSession();
       if (session) {
+        // Check profile role; if null, send to onboarding
         const { data: profile } = await supabase
           .from("profiles")
           .select("role")
           .eq("id", session.user.id)
           .single();
-
-        if (profile?.role) {
-          navigate("/chat");
-        } else {
+        if (!profile || profile.role === null) {
           navigate("/onboarding");
+        } else {
+          navigate("/chat");
         }
       }
     };
@@ -92,16 +92,16 @@ const Login = () => {
     }
 
     if (data.user) {
+      // After successful login, decide route based on profile role
       const { data: profile } = await supabase
         .from("profiles")
         .select("role")
         .eq("id", data.user.id)
         .single();
-
-      if (profile?.role) {
-        navigate("/chat");
-      } else {
+      if (!profile || profile.role === null) {
         navigate("/onboarding");
+      } else {
+        navigate("/chat");
       }
     }
 

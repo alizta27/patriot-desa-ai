@@ -68,10 +68,7 @@ const Chat = () => {
         .eq("id", session.user.id)
         .single();
 
-      if (!profile?.role || profile?.role === "umum") {
-        navigate("/onboarding");
-        return;
-      }
+      // No redirect based on role; allow access regardless of role value (including null or "umum")
 
       // Check if need to reset daily usage
       const now = new Date();

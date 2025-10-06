@@ -138,7 +138,7 @@ export function ChatSidebar({
                   value={searchText}
                   onChange={(e) => setSearchText(e.target.value)}
                 />
-                {searchText && (
+                {searchOpen && (
                   <button
                     className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                     onClick={() => {
@@ -186,7 +186,7 @@ export function ChatSidebar({
                             <Button
                               variant="ghost"
                               size="icon"
-                              className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-accent"
+                              className="h-[20px] opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-accent"
                               onClick={(e) => e.stopPropagation()}
                             >
                               <MoreHorizontal className="w-4 h-4" />

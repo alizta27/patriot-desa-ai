@@ -8,8 +8,7 @@ export default defineConfig(({ mode }) => ({
   server: {
     host: "0.0.0.0",
     port: 5000,
-    strictPort: false,
-    allowedHosts: ['74ed8634-f56b-4292-b792-b034b050c807-00-3hmnsni41398o.picard.replit.dev']
+    strictPort: true,
   },
   plugins: [react()].filter(Boolean),
   resolve: {

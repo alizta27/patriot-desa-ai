@@ -1,0 +1,80 @@
+# 🧠 Project Context
+
+I’ve already built my app using **React + Supabase**, and it’s connected to my **existing personal Supabase project**.  
+I’ve also created several **Supabase Edge Functions** before — please **follow exactly how I created them** (same structure, conventions, and logic style).
+
+The app has two main parts:
+1. **Admin Dashboard** – for management, configuration, and control.
+2. **Main Client Side** – for regular users that interact with data and settings managed by the admin.
+
+Some features in both areas are **not yet connected** to Supabase or Edge Functions, and some client-side components are **not yet properly synced** with the admin configurations.
+
+---
+
+# 🚫 Important
+
+**Don’t migrate my Supabase. I want to keep using my existing Supabase project.**  
+Do not replace it with Replit’s local or Neon PostgreSQL database.  
+All integrations and functions must continue to use my **current Supabase project** and credentials.
+
+---
+
+# 🎯 Task for Replit AI
+
+1. **Scan my entire codebase**, including:
+   - `admin` pages and components
+   - Main client-side components and pages
+   - Shared hooks, contexts, and service files
+
+2. Identify:
+   - Parts that are **not yet connected** to Supabase or any Edge Function.
+   - Features that should be **controlled via Admin settings** but are not linked to the backend.
+   - Any **client-side logic** that should depend on admin data but isn’t currently synced.
+
+3. For every missing or incomplete integration:
+   - **Create or update Supabase Edge Functions** following my existing structure and conventions.
+   - **Update frontend integration** (React code) to use these APIs with **React Query**.
+   - Ensure that both Admin and Client sides are fully integrated and synchronized.
+
+---
+
+# ⚙️ Implementation Rules
+
+- Use **TypeScript** if my project already uses it.
+- Follow **exactly the same structure** as my existing Edge Functions.
+- Use the **Supabase SDK** (`from().select()`, `insert()`, `update()`, `delete()`, etc.) for all database operations.
+- Return JSON responses with consistent structure:  
+  `{ status, message, data }`
+- Include **CORS headers** like in my existing functions.
+- For Admin-only operations, add appropriate **role validation or access checks**.
+- Use **React Query** for all data fetching/mutation with the same conventions I already use:
+  - Query keys (e.g., `['users']`, `['posts']`, `['settings']`)
+  - Hook names (e.g., `useUsersQuery`, `useUpdateSettingsMutation`)
+  - Same style of toast notifications and error handling.
+
+---
+
+# 🔄 Integration Scope
+
+- Ensure Admin changes (e.g., data updates, settings, visibility toggles) **reflect correctly on the client side**.
+- Client-side components should dynamically update based on Admin configurations.
+- Both sides should use consistent React Query state and data synchronization.
+
+---
+
+# ✅ Expected Output
+
+- A summary of all missing or incomplete integrations across **Admin and Client** sides.
+- The new or updated **Supabase Edge Function files**.
+- Updated or newly created **React Query hooks** to connect the frontend with these functions.
+- A short explanation of what was missing before, what was added, and how everything is now linked together.
+
+---
+
+# 📘 Reminder
+
+- I already have Edge Functions — **follow exactly how I created them**.
+- I already use React Query — **follow my existing pattern**.
+- **Don’t migrate my Supabase. I want to keep using my existing Supabase project.**
+- Do not introduce new folder structures, frameworks, or coding styles.
+- Keep everything clean, consistent, and aligned with my current project.

@@ -69,6 +69,7 @@ serve(async (req) => {
     const { data: users, error } = await supabaseAdmin
       .from("profiles")
       .select("*")
+      .neq("role", "admin")
       .order("created_at", { ascending: false });
 
     if (error) {

@@ -118,7 +118,6 @@ export function ChatInterface({
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log({ inputMessage, chatId });
     if (!inputMessage.trim()) return;
 
     // Check usage limit for free users

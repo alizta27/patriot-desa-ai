@@ -95,6 +95,7 @@ export const useAddMessage = () => {
       chat_id: string;
       role: string;
       message: string;
+      category?: string;
     }) => {
       const { error } = await supabaseApi.addMessage(data);
       if (error) throw error;

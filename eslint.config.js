@@ -6,7 +6,13 @@ import tseslint from "typescript-eslint";
 import simpleImportSort from "eslint-plugin-simple-import-sort";
 
 export default tseslint.config(
-  { ignores: ["dist", "supabase"] },
+  {
+    ignores: [
+      "dist/**", // ignore everything inside dist
+      "supabase/functions/**", // ignore everything inside supabase
+      "node_modules/**", // always good to ignore this too
+    ],
+  },
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
     files: ["**/*.{ts,tsx}"],

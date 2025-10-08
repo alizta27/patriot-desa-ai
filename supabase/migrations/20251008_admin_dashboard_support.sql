@@ -246,18 +246,7 @@ WHERE role = 'user'
 GROUP BY 1
 ORDER BY 2 DESC;
 
--- Convenience view for admin users listing (includes email)
-CREATE OR REPLACE VIEW public.admin_users AS
-SELECT
-  p.id,
-  p.name,
-  p.email,
-  p.role,
-  p.subscription_status,
-  p.usage_count,
-  p.daily_usage_reset_at,
-  p.created_at,
-  p.phone_number
-FROM public.profiles p;
+-- Note: admin_users view has been deprecated and removed
+DROP VIEW IF EXISTS public.admin_users;
 
 

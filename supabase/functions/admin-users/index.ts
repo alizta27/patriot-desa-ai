@@ -67,7 +67,7 @@ serve(async (req) => {
 
     // 🔹 Fetch data
     const { data: users, error } = await supabaseAdmin
-      .from("admin_users")
+      .from("profiles")
       .select("*")
       .order("created_at", { ascending: false });
 

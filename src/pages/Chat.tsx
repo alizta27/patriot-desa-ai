@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Menu } from "lucide-react";
 import { useGlobalStore } from "@/store/global";
 import { usePlanStore } from "@/store/plan";
+import { useDeviceType } from "@/hooks/useDeviceType";
 
 export interface Chat {
   id: string;
@@ -31,14 +32,19 @@ const Chat = () => {
   const { setUserId: setPlanUserId, setServerStatus } = usePlanStore();
   const queryClient = useQueryClient();
 
+  const deviceType = useDeviceType();
+  useEffect(() => {
+    if (deviceType !== "mobile") {
+      openSidebar();
+    }
+  }, [deviceType]);
+
   // React Query hooks
   const { data: subscriptionData, isLoading: isCheckingSubscription } =
     useSubscriptionStatus(userId);
   const { setUpdatePlan, currentPlan } = usePlanStore();
   const { data: chats = [], isLoading: isLoadingChats } = useUserChats(userId);
 
-  console.log({ subscriptionData });
-  console.log({ currentPlan });
   const subscriptionStatus = currentPlan || "free";
   const isPremium =
     subscriptionStatus === "premium" && !subscriptionData?.expired;
@@ -110,12 +116,16 @@ const Chat = () => {
   const handleNewChat = async () => {
     // Open empty chat view; persist on first message
     setCurrentChatId(null);
-    closeSidebar();
+    if (deviceType === "mobile") {
+      closeSidebar();
+    }
   };
 
   const handleSelectChat = (chatId: string) => {
     setCurrentChatId(chatId);
-    closeSidebar();
+    if (deviceType === "mobile") {
+      closeSidebar();
+    }
   };
 
   const handleLogout = async () => {
@@ -155,88 +165,24 @@ const Chat = () => {
     toast.success("Chat berhasil dihapus!");
   };
 
-  const handleSendMessage = async (message: string) => {
+  const handleSendMessage = async () => {
     if (!userId) return;
 
-    // Check usage limit for free users
-    if (!isPremium && usageCount >= 5) {
-      toast.error(
-        "Anda telah mencapai batas penggunaan harian. Upgrade ke Premium untuk akses unlimited!"
-      );
+    // Update usage count in the database
+    const { error } = await supabase
+      .from("profiles")
+      .update({
+        usage_count: usageCount + 1,
+      })
+      .eq("id", userId);
+
+    if (error) {
+      console.error("Error updating usage count:", error);
       return;
     }
 
-    try {
-      // If no current chat, create a new one
-      let chatId = currentChatId;
-      if (!chatId) {
-        const { data: newChat, error: chatError } = await supabase
-          .from("chats")
-          .insert({
-            user_id: userId,
-            title:
-              message.substring(0, 50) + (message.length > 50 ? "..." : ""),
-          })
-          .select()
-          .single();
-
-        if (chatError) {
-          toast.error("Gagal membuat chat baru");
-          return;
-        }
-
-        chatId = newChat.id;
-        setCurrentChatId(chatId);
-        // Update chat list cache immediately
-        try {
-          queryClient.setQueryData(chatKeys.chats(userId), (old: any) => {
-            const arr = Array.isArray(old) ? old : [];
-            return [newChat, ...arr];
-          });
-        } catch {}
-      }
-
-      // Add user message to chat
-      await supabase.from("chat_messages").insert({
-        chat_id: chatId,
-        role: "user",
-        message: message,
-      });
-
-      // Update usage count for free users
-      if (!isPremium) {
-        const newUsageCount = usageCount + 1;
-        setUsageCount(newUsageCount);
-
-        await supabase
-          .from("profiles")
-          .update({ usage_count: newUsageCount })
-          .eq("id", userId);
-      }
-
-      // Call AI function
-      const { data, error } = await supabase.functions.invoke("chat-ai", {
-        body: {
-          chat_id: chatId,
-          message: message,
-        },
-      });
-
-      if (error) {
-        toast.error("Gagal mengirim pesan");
-        return;
-      }
-
-      // Add AI response to chat
-      await supabase.from("chat_messages").insert({
-        chat_id: chatId,
-        role: "assistant",
-        message: data.response,
-      });
-    } catch (error) {
-      console.error("Error sending message:", error);
-      toast.error("Terjadi kesalahan saat mengirim pesan");
-    }
+    // Update local state
+    setUsageCount((prev) => prev + 1);
   };
 
   if (isCheckingSubscription) {
@@ -253,27 +199,26 @@ const Chat = () => {
   return (
     <SidebarProvider>
       <div className="flex h-screen w-screen bg-background overflow-hidden">
-        {/* Mobile hamburger to open sidebar */}
-        <div className="absolute top-3 left-3 md:hidden z-10">
-          <Button variant="ghost" size="icon" onClick={openSidebar}>
-            <Menu className="w-5 h-5" />
-          </Button>
-        </div>
-        <ChatSidebar
-          chats={chats}
-          currentChatId={currentChatId}
-          onNewChat={handleNewChat}
-          onSelectChat={handleSelectChat}
-          onLogout={handleLogout}
-          onRenameChat={handleRenameChat}
-          onDeleteChat={handleDeleteChat}
-        />
+        {isSidebarOpen ? (
+          <ChatSidebar
+            closeSidebar={closeSidebar}
+            chats={chats}
+            currentChatId={currentChatId}
+            onNewChat={handleNewChat}
+            onSelectChat={handleSelectChat}
+            onLogout={handleLogout}
+            onRenameChat={handleRenameChat}
+            onDeleteChat={handleDeleteChat}
+          />
+        ) : null}
         <div className="flex-1 flex flex-col min-w-0">
           <ChatInterface
+            isSidebarOpen={isSidebarOpen}
+            openSidebar={openSidebar}
             chatId={currentChatId}
             usageCount={usageCount}
             subscriptionStatus={subscriptionStatus}
-            onSendMessage={() => {}}
+            onSendMessage={handleSendMessage}
             onChatCreated={(newId: string) => {
               setCurrentChatId(newId);
               if (userId) {
@@ -282,25 +227,10 @@ const Chat = () => {
                 });
               }
             }}
+            onRenameChat={handleRenameChat}
+            onDeleteChat={handleDeleteChat}
           />
         </div>
-        {/* Mobile Sidebar Drawer */}
-        <Dialog
-          open={isSidebarOpen}
-          onOpenChange={(val) => (val ? openSidebar() : closeSidebar())}
-        >
-          <DialogContent className="p-0 w-72 sm:max-w-[18rem] md:hidden">
-            <ChatSidebar
-              chats={chats}
-              currentChatId={currentChatId}
-              onNewChat={handleNewChat}
-              onSelectChat={handleSelectChat}
-              onLogout={handleLogout}
-              onRenameChat={handleRenameChat}
-              onDeleteChat={handleDeleteChat}
-            />
-          </DialogContent>
-        </Dialog>
       </div>
     </SidebarProvider>
   );

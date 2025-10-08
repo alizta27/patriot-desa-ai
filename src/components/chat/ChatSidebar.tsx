@@ -1,15 +1,7 @@
 import { useMemo, useState } from "react";
-import { LogOut, Plus, MoreHorizontal, Menu, Search, X } from "lucide-react";
+import { LogOut, Plus, MoreHorizontal, Search, X, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarTrigger,
-} from "@/components/ui/sidebar";
 import type { Chat } from "@/pages/Chat";
 import {
   DropdownMenu,
@@ -40,6 +32,7 @@ interface ChatSidebarProps {
   onNewChat: () => void;
   onSelectChat: (chatId: string) => void;
   onLogout: () => void;
+  closeSidebar: () => void;
   onRenameChat?: (chatId: string, newTitle: string) => void;
   onDeleteChat?: (chatId: string) => void;
 }
@@ -52,6 +45,7 @@ export function ChatSidebar({
   onLogout,
   onRenameChat,
   onDeleteChat,
+  closeSidebar,
 }: ChatSidebarProps) {
   const [renameOpen, setRenameOpen] = useState(false);
   const [renameValue, setRenameValue] = useState("");
@@ -89,152 +83,144 @@ export function ChatSidebar({
   }, [chats, searchText]);
 
   return (
-    <Sidebar className="border-r border-sidebar-border">
-      <SidebarContent>
-        {/* Header with logo and toggle */}
-        <div className="px-3 py-4 flex items-center gap-2 border-b border-sidebar-border">
+    <div className="w-64 h-full border-r border-border bg-background flex flex-col">
+      {/* Header with logo */}
+      <div className="px-3 py-4 flex items-center gap-2 border-b border-border justify-between">
+        <div className="flex items-center gap-2">
           <div className="h-7 w-7 rounded-md bg-primary/10 flex items-center justify-center text-primary font-semibold">
             PD
           </div>
-          <div className="text-sm font-medium text-sidebar-foreground">
+          <div className="text-sm font-medium text-foreground">
             Patriot Desa
           </div>
-          <div className="ml-auto">
-            <SidebarTrigger>
-              {/* <SidebarTrigger asChild> */}
-              <Button variant="ghost" size="icon" className="h-8 w-8">
-                <Menu className="h-4 w-4" />
-              </Button>
-            </SidebarTrigger>
-          </div>
         </div>
+        <div className="flex md:hidden">
+          <Button variant="ghost" size="icon" onClick={closeSidebar}>
+            <Menu className="w-5 h-5" />
+          </Button>
+        </div>
+      </div>
 
-        {/* Actions: New chat + Search */}
-        <div className="p-3 space-y-2 border-b border-sidebar-border">
+      {/* Actions: New chat + Search */}
+      <div className="p-3 space-y-2 border-b border-border">
+        <Button
+          onClick={onNewChat}
+          variant="outline"
+          className="w-full justify-start gap-2"
+        >
+          <Plus className="h-4 w-4" />
+          Chat Baru
+        </Button>
+
+        {!searchOpen ? (
           <Button
-            onClick={onNewChat}
+            onClick={() => setSearchOpen(true)}
             variant="outline"
             className="w-full justify-start gap-2"
           >
-            <Plus className="h-4 w-4" />
-            Chat Baru
+            <Search className="h-4 w-4" />
+            Cari chat
           </Button>
-
-          {!searchOpen ? (
-            <Button
-              onClick={() => setSearchOpen(true)}
-              variant="outline"
-              className="w-full justify-start gap-2 bg-none"
-            >
-              <Search className="h-4 w-4" />
-              Cari chat
-            </Button>
-          ) : (
-            <div className="flex items-center gap-2">
-              <div className="relative flex-1">
-                <input
-                  className="w-full h-9 rounded-md border bg-background px-3 pr-8 text-sm outline-none text-muted-foreground"
-                  placeholder="Cari judul chat..."
-                  value={searchText}
-                  onChange={(e) => setSearchText(e.target.value)}
-                />
-                {searchOpen && (
-                  <button
-                    className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                    onClick={() => {
-                      setSearchText("");
-                      setSearchOpen(false);
-                    }}
-                    aria-label="Clear search"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
-                )}
-              </div>
+        ) : (
+          <div className="flex items-center gap-2">
+            <div className="relative flex-1">
+              <input
+                className="w-full h-9 rounded-md border bg-background px-3 pr-8 text-sm outline-none text-muted-foreground"
+                placeholder="Cari judul chat..."
+                value={searchText}
+                onChange={(e) => setSearchText(e.target.value)}
+              />
+              {searchOpen && (
+                <button
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  onClick={() => {
+                    setSearchText("");
+                    setSearchOpen(false);
+                  }}
+                  aria-label="Clear search"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              )}
             </div>
-          )}
-        </div>
+          </div>
+        )}
+      </div>
 
-        {/* Chat List */}
-        <SidebarGroup>
-          <SidebarGroupLabel className="text-sidebar-foreground">
+      {/* Chat List */}
+      <div className="flex-1 flex flex-col min-h-0">
+        <div className="px-3 py-2">
+          <h3 className="text-sm font-medium text-muted-foreground">
             Riwayat Chat
-          </SidebarGroupLabel>
-          <SidebarGroupContent>
-            <ScrollArea className="h-full">
-              <div className="space-y-1 p-2 w-[230px]">
-                {filteredChats.map((chat) => {
-                  const active = currentChatId === chat.id;
-                  return (
-                    <div
-                      key={chat.id}
-                      className={`group flex items-center justify-between px-3 py-2 rounded-md cursor-pointer transition-colors ${
-                        active
-                          ? "bg-sidebar-accent/40"
-                          : "hover:bg-sidebar-accent/40"
-                      }`}
-                      onClick={() => onSelectChat(chat.id)}
-                    >
-                      <span className="truncate flex-1 pr-2 max-w-[90%]">
-                        {chat.title}
-                      </span>
-
-                      {(onRenameChat || onDeleteChat) && (
-                        <DropdownMenu>
-                          <DropdownMenuTrigger>
-                            {/* <DropdownMenuTrigger asChild> */}
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-[20px] opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-accent"
-                              onClick={(e) => e.stopPropagation()}
-                            >
-                              <MoreHorizontal className="w-4 h-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-
-                          <DropdownMenuContent
-                            align="end"
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            {onRenameChat && (
-                              <DropdownMenuItem
-                                onClick={() => openRename(chat)}
-                              >
-                                Rename Chat
-                              </DropdownMenuItem>
-                            )}
-                            {onDeleteChat && (
-                              <DropdownMenuItem
-                                className="text-red-600"
-                                onClick={() => askDelete(chat.id)}
-                              >
-                                Delete Chat
-                              </DropdownMenuItem>
-                            )}
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            </ScrollArea>
-          </SidebarGroupContent>
-        </SidebarGroup>
-
-        {/* Logout */}
-        <div className="mt-auto p-4 border-t border-sidebar-border">
-          <Button
-            onClick={onLogout}
-            variant="ghost"
-            className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent"
-          >
-            <LogOut className="mr-2 h-4 w-4" />
-            Keluar
-          </Button>
+          </h3>
         </div>
-      </SidebarContent>
+        <div className="flex-1 min-h-0">
+          {/* <ScrollArea className="h-full"> */}
+          <div className="space-y-1 p-2 h-full overflow-y-auto overflow-x-hidden">
+            {filteredChats.map((chat) => {
+              const active = currentChatId === chat.id;
+              return (
+                <div
+                  key={chat.id}
+                  className={`group flex items-center justify-between px-3 py-2 rounded-md cursor-pointer transition-colors ${
+                    active ? "bg-accent/50" : "hover:bg-accent/50"
+                  }`}
+                  onClick={() => onSelectChat(chat.id)}
+                >
+                  <span className="truncate flex-1 pr-2">{chat.title}</span>
+
+                  {(onRenameChat || onDeleteChat) && (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-[20px] opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-accent hidden md:block"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <MoreHorizontal className="w-4 h-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+
+                      <DropdownMenuContent
+                        align="end"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        {onRenameChat && (
+                          <DropdownMenuItem onClick={() => openRename(chat)}>
+                            Rename Chat
+                          </DropdownMenuItem>
+                        )}
+                        {onDeleteChat && (
+                          <DropdownMenuItem
+                            className="text-red-600"
+                            onClick={() => askDelete(chat.id)}
+                          >
+                            Delete Chat
+                          </DropdownMenuItem>
+                        )}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+          {/* </ScrollArea> */}
+        </div>
+      </div>
+
+      {/* Logout */}
+      <div className="p-4 border-t border-border">
+        <Button
+          onClick={onLogout}
+          variant="ghost"
+          className="w-full justify-start text-foreground hover:bg-accent"
+        >
+          <LogOut className="mr-2 h-4 w-4" />
+          Keluar
+        </Button>
+      </div>
 
       {/* Rename Dialog */}
       <Dialog open={renameOpen} onOpenChange={setRenameOpen}>
@@ -286,6 +272,6 @@ export function ChatSidebar({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </Sidebar>
+    </div>
   );
 }

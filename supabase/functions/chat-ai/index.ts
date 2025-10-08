@@ -30,6 +30,7 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         model: "gpt-4o-mini",
+        stream: true,
         messages: [
           {
             role: "system",
@@ -44,12 +45,13 @@ serve(async (req) => {
     if (!response.ok) {
       const errorData = await response.json();
       console.error("OpenAI API error:", response.status, errorData);
-      
+
       // Handle rate limit or quota errors
       if (response.status === 429) {
         return new Response(
           JSON.stringify({
-            error: "OpenAI API rate limit exceeded or quota depleted. Please check your OpenAI account billing.",
+            error:
+              "OpenAI API rate limit exceeded or quota depleted. Please check your OpenAI account billing.",
           }),
           {
             status: 429,
@@ -57,17 +59,83 @@ serve(async (req) => {
           }
         );
       }
-      
-      throw new Error(`OpenAI API error: ${response.status} - ${errorData.error?.message || 'Unknown error'}`);
+
+      throw new Error(
+        `OpenAI API error: ${response.status} - ${
+          errorData.error?.message || "Unknown error"
+        }`
+      );
     }
 
-    const data = await response.json();
-    console.log("OpenAI response received");
+    console.log("OpenAI streaming response started");
 
-    const aiMessage = data.choices[0].message.content;
+    // Create a readable stream that processes the OpenAI stream
+    const readable = new ReadableStream({
+      async start(controller) {
+        const reader = response.body?.getReader();
+        if (!reader) {
+          controller.error(new Error("No response body"));
+          return;
+        }
 
-    return new Response(JSON.stringify({ message: aiMessage }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+        const decoder = new TextDecoder();
+        let buffer = "";
+
+        try {
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            // Decode the chunk and add to buffer
+            const chunk = decoder.decode(value, { stream: true });
+            buffer += chunk;
+
+            // Process complete lines
+            const lines = buffer.split("\n");
+            buffer = lines.pop() || ""; // Keep incomplete line in buffer
+
+            for (const line of lines) {
+              const trimmedLine = line.trim();
+
+              if (trimmedLine === "data: [DONE]") {
+                console.log("Stream completed");
+                controller.close();
+                return;
+              }
+
+              if (trimmedLine.startsWith("data: ")) {
+                try {
+                  const jsonStr = trimmedLine.substring(6);
+                  const data = JSON.parse(jsonStr);
+                  const content = data.choices?.[0]?.delta?.content;
+
+                  if (content) {
+                    // Send the content chunk to the client
+                    controller.enqueue(new TextEncoder().encode(content));
+                  }
+                } catch (parseError) {
+                  console.warn("Failed to parse SSE data:", parseError);
+                  // Continue processing other lines
+                }
+              }
+            }
+          }
+        } catch (error) {
+          console.error("Error processing stream:", error);
+          controller.error(error);
+        } finally {
+          reader.releaseLock();
+        }
+      },
+    });
+
+    return new Response(readable, {
+      headers: {
+        ...corsHeaders,
+        "Content-Type": "text/plain; charset=utf-8",
+        "Cache-Control": "no-cache",
+        Connection: "keep-alive",
+      },
     });
   } catch (error) {
     console.error("Error in chat-ai function:", error);

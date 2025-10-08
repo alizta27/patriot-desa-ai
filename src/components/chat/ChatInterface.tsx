@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card } from "@/components/ui/card";
-import { Send, Crown } from "lucide-react";
+import { Send, Crown, Menu, EllipsisVertical } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
@@ -16,6 +16,24 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { useDeviceType } from "@/hooks/useDeviceType";
+import { cn } from "@/lib/utils";
 
 interface Message {
   id: string;
@@ -30,6 +48,10 @@ interface ChatInterfaceProps {
   subscriptionStatus: "free" | "premium";
   onSendMessage: () => void;
   onChatCreated: (chatId: string) => void;
+  openSidebar: () => void;
+  isSidebarOpen: boolean;
+  onRenameChat?: (chatId: string, newTitle: string) => void;
+  onDeleteChat?: (chatId: string) => void;
 }
 
 function generateChatTitle(firstMessage: string): string {
@@ -44,12 +66,22 @@ export function ChatInterface({
   subscriptionStatus,
   onSendMessage,
   onChatCreated,
+  openSidebar,
+  isSidebarOpen,
+  onRenameChat,
+  onDeleteChat,
 }: ChatInterfaceProps) {
+  const device = useDeviceType();
   const navigate = useNavigate();
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputMessage, setInputMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+
+  // State for rename and delete dialogs
+  const [renameOpen, setRenameOpen] = useState(false);
+  const [renameValue, setRenameValue] = useState("");
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   useEffect(() => {
     if (chatId) {
@@ -143,19 +175,68 @@ export function ChatInterface({
       })
     );
 
-    // Call OpenAI via edge function
+    // Call OpenAI via edge function with streaming
     try {
-      const { data: functionData, error: functionError } =
-        await supabase.functions.invoke("chat-ai", {
-          body: { messages: conversationHistory },
-        });
+      const session = await supabase.auth.getSession();
+      const accessToken = session.data.session?.access_token;
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat-ai`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken}`,
+          },
+          body: JSON.stringify({ messages: conversationHistory }),
+        }
+      );
 
-      if (functionError) {
-        throw functionError;
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to get AI response");
       }
 
-      const aiResponse = functionData.message;
+      // Process the streaming response
+      const reader = response.body?.getReader();
+      if (!reader) {
+        throw new Error("No response body");
+      }
 
+      const decoder = new TextDecoder();
+      let aiResponse = "";
+
+      // Create a temporary message for streaming
+      const tempMessageId = `temp-${Date.now()}`;
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: tempMessageId,
+          role: "assistant",
+          message: "",
+          created_at: new Date().toISOString(),
+        },
+      ]);
+
+      try {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          const chunk = decoder.decode(value, { stream: true });
+          aiResponse += chunk;
+
+          // Update the temporary message with the new content
+          setMessages((prev) =>
+            prev.map((msg) =>
+              msg.id === tempMessageId ? { ...msg, message: aiResponse } : msg
+            )
+          );
+        }
+      } finally {
+        reader.releaseLock();
+      }
+
+      // Save the complete response to database
       const { data: aiMsg, error: aiError } = await supabase
         .from("chat_messages")
         .insert({
@@ -167,7 +248,18 @@ export function ChatInterface({
         .single();
 
       if (!aiError && aiMsg) {
-        setMessages((prev) => [...prev, aiMsg as Message]);
+        // Replace the temporary message with the real one
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg.id === tempMessageId
+              ? {
+                  ...aiMsg,
+                  id: aiMsg.id,
+                  role: aiMsg.role as "user" | "assistant",
+                }
+              : msg
+          )
+        );
         onSendMessage();
       }
 
@@ -179,29 +271,100 @@ export function ChatInterface({
     }
   };
 
-  const remainingQuestions = Math.max(0, 5 - usageCount);
+  // Handler functions for rename and delete
+  const openRename = () => {
+    if (!chatId) return;
+    // Get current chat title from messages or use a default
+    const currentTitle = messages.length > 0 ? "Chat" : "New Chat";
+    setRenameValue(currentTitle);
+    setRenameOpen(true);
+  };
+
+  const submitRename = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!chatId || !onRenameChat) return;
+    const newTitle = renameValue.trim();
+    if (!newTitle) return;
+    onRenameChat(chatId, newTitle);
+    setRenameOpen(false);
+  };
+
+  const askDelete = () => {
+    if (!chatId) return;
+    setConfirmOpen(true);
+  };
+
+  const confirmDelete = () => {
+    if (!chatId || !onDeleteChat) return;
+    onDeleteChat(chatId);
+    setConfirmOpen(false);
+  };
 
   return (
-    <main className="flex-1 flex flex-col h-screen bg-background">
+    <main className="flex-1 flex flex-col h-screen bg-background relative">
+      {!isSidebarOpen || device !== "mobile" ? null : (
+        <div className="h-full absolute bg-gray-600/50 top-0 left-0 right-0"></div>
+      )}
+
       {/* Header */}
-      <div className="border-b border-border bg-card p-4 flex items-center justify-between">
-        <div>
-          <h2 className="text-lg font-semibold">Patriot Desa Assistant</h2>
+      {device !== "mobile" && (
+        <div className="w-full p-4 flex justify-end">
           {subscriptionStatus === "free" && (
-            <p className="text-sm text-muted-foreground">
-              Sisa pertanyaan hari ini: {remainingQuestions}/5
-            </p>
+            <Button
+              onClick={() => navigate("/subscription")}
+              variant="outline"
+              className="border-primary text-primary hover:bg-primary-light/50"
+            >
+              <Crown className="mr-2 h-4 w-4" />
+              Upgrade Premium
+            </Button>
           )}
         </div>
-        {subscriptionStatus === "free" && (
-          <Button
-            onClick={() => navigate("/subscription")}
-            variant="outline"
-            className="border-primary text-primary hover:bg-primary-light/50"
+      )}
+      <div className="border-b border-border bg-card p-4 flex md:hidden items-center justify-between">
+        <div className="flex items-center w-full">
+          {isSidebarOpen ? null : (
+            <div className="ml-[-15px] md:hidden z-10">
+              <Button variant="ghost" size="icon" onClick={openSidebar}>
+                <Menu className="w-5 h-5" />
+              </Button>
+            </div>
+          )}
+          <div
+            className={cn(
+              "flex items-center justify-between w-full",
+              device === "mobile" ? "flex-row" : "flex-col"
+            )}
           >
-            <Crown className="mr-2 h-4 w-4" />
-            Upgrade Premium
-          </Button>
+            <h2 className="text-lg font-semibold">Patriot Desa</h2>
+            {subscriptionStatus === "free" && (
+              <p className="text-sm text-muted-foreground">
+                Terpakai: {usageCount}/5
+              </p>
+            )}
+          </div>
+        </div>
+        {/* Dropdown menu for chat actions */}
+        {chatId && (onRenameChat || onDeleteChat) && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon">
+                <EllipsisVertical className="w-5 h-5" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              {onRenameChat && (
+                <DropdownMenuItem onClick={openRename}>
+                  Rename Chat
+                </DropdownMenuItem>
+              )}
+              {onDeleteChat && (
+                <DropdownMenuItem className="text-red-600" onClick={askDelete}>
+                  Delete Chat
+                </DropdownMenuItem>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
         )}
       </div>
 
@@ -221,7 +384,7 @@ export function ChatInterface({
                 key={msg.id}
                 className={`p-4 ${
                   msg.role === "user"
-                    ? "ml-auto bg-accent/10 text-accent max-w-[80%] rounded-lg"
+                    ? "ml-auto bg-accent/5 text-accent max-w-[80%] rounded-lg"
                     : "mr-auto bg-white w-full"
                 }`}
               >
@@ -245,9 +408,7 @@ export function ChatInterface({
             ))
           )}
           {isLoading && (
-            <Card className="p-4 mr-auto bg-card max-w-[80%]">
-              <p className="text-sm text-muted-foreground">Mengetik...</p>
-            </Card>
+            <p className="text-sm text-muted-foreground">Mengetik...</p>
           )}
         </div>
       </ScrollArea>
@@ -300,6 +461,54 @@ export function ChatInterface({
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Rename Dialog */}
+      <Dialog open={renameOpen} onOpenChange={setRenameOpen}>
+        <DialogContent onClick={(e) => e.stopPropagation()}>
+          <DialogHeader>
+            <DialogTitle>Rename Chat</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={submitRename} className="mt-2">
+            <input
+              className="w-full border rounded-md p-2 bg-background"
+              value={renameValue}
+              onChange={(e) => setRenameValue(e.target.value)}
+              autoFocus
+            />
+            <div className="flex justify-end gap-2 mt-4">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setRenameOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button type="submit">Save</Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirm */}
+      <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+        <AlertDialogContent onClick={(e) => e.stopPropagation()}>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this chat?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-red-600 hover:bg-red-700"
+              onClick={confirmDelete}
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </main>
   );
 }

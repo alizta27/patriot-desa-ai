@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Loader2, MoreVertical, RefreshCw, Search, Trash2 } from "lucide-react";
-import { toast } from "@/components/ui/sonner-api";
 
 import {
   useAdminUsers,
@@ -34,6 +33,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
+import { toast } from "@/components/ui/sonner-api";
 import {
   Table,
   TableBody,

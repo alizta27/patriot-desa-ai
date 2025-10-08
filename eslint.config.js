@@ -6,7 +6,7 @@ import tseslint from "typescript-eslint";
 import simpleImportSort from "eslint-plugin-simple-import-sort";
 
 export default tseslint.config(
-  { ignores: ["dist"] },
+  { ignores: ["dist", "supabase"] },
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
     files: ["**/*.{ts,tsx}"],
@@ -37,20 +37,23 @@ export default tseslint.config(
             // 2. @/types, @/interfaces, @/constants, @/assets, @/path
             [
               "^@/assets",
-              "^@/types",
-              "^@/interfaces",
-              "^@/constants",
-              "^@/path",
+              // "^@/types",
+              // "^@/interfaces",
+              // "^@/constants",
+              // "^@/path",
             ],
 
             // 3. @/services
-            ["^@/services"],
+            // ["^@/services"],
 
             // 4. @/hooks, @/utils,
-            ["^@/hooks", "^@/utils", "^@/store"],
+            ["^@/hooks", "^@/libs", "^@/store"],
 
             // 5. @/layouts and @/providers
-            ["^@/layouts", "^@/providers"],
+            [
+              // "^@/layouts",
+              "^@/providers",
+            ],
 
             // 6. @/pages
             ["^@/pages"],

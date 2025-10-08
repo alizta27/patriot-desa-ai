@@ -3,7 +3,6 @@ import ReactMarkdown from "react-markdown";
 import { useNavigate } from "react-router-dom";
 import { Crown, EllipsisVertical, Menu, Send } from "lucide-react";
 import remarkGfm from "remark-gfm";
-import { toast } from "@/components/ui/sonner-api";
 
 import { useDeviceType } from "@/hooks/useDeviceType";
 
@@ -33,6 +32,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { toast } from "@/components/ui/sonner-api";
 
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";

@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { Menu } from "lucide-react";
-import { toast } from "@/components/ui/sonner-api";
 
 import { chatKeys, useUserChats } from "@/hooks/queries/chat";
 import { useSubscriptionStatus } from "@/hooks/queries/subscription";
@@ -15,6 +14,7 @@ import { ChatSidebar } from "@/components/chat/ChatSidebar";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { SidebarProvider } from "@/components/ui/sidebar";
+import { toast } from "@/components/ui/sonner-api";
 
 import { supabase } from "@/integrations/supabase/client";
 

@@ -10,9 +10,9 @@ import {
   Users,
   X,
 } from "lucide-react";
-import { toast } from "@/components/ui/sonner-api";
 
 import { Button } from "@/components/ui/button";
+import { toast } from "@/components/ui/sonner-api";
 
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";

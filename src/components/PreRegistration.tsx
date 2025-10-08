@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { AlertCircle, CheckCircle, Gift, Mail } from "lucide-react";
-import { toast } from "@/components/ui/sonner-api";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -11,6 +10,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { toast } from "@/components/ui/sonner-api";
 
 import { supabase } from "@/integrations/supabase/client";
 

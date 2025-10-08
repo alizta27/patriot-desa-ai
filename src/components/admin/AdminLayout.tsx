@@ -1,20 +1,21 @@
 import { useState } from "react";
-import { Outlet, useNavigate, useLocation } from "react-router-dom";
-import { cn } from "@/lib/utils";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import {
-  LayoutDashboard,
-  Users,
-  Settings,
   Activity,
-  Menu,
-  X,
-  LogOut,
   ChevronLeft,
+  LayoutDashboard,
+  LogOut,
+  Menu,
+  Settings,
+  Users,
+  X,
 } from "lucide-react";
+import { toast } from "@/components/ui/sonner-api";
+
 import { Button } from "@/components/ui/button";
 
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 interface NavItem {
   title: string;

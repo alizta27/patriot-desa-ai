@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { Instagram, MessageCircle, Youtube } from "lucide-react";
+
 import { appLogo } from "@/assets/images";
 
 const Footer = () => {

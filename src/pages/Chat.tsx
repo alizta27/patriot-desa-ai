@@ -1,19 +1,22 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
-import { SidebarProvider } from "@/components/ui/sidebar";
-import { ChatSidebar } from "@/components/chat/ChatSidebar";
-import { ChatInterface } from "@/components/chat/ChatInterface";
-import { toast } from "sonner";
-import { useSubscriptionStatus } from "@/hooks/queries/subscription";
-import { useUserChats, chatKeys } from "@/hooks/queries/chat";
 import { useQueryClient } from "@tanstack/react-query";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { Menu } from "lucide-react";
+import { toast } from "@/components/ui/sonner-api";
+
+import { chatKeys, useUserChats } from "@/hooks/queries/chat";
+import { useSubscriptionStatus } from "@/hooks/queries/subscription";
+import { useDeviceType } from "@/hooks/useDeviceType";
 import { useGlobalStore } from "@/store/global";
 import { usePlanStore } from "@/store/plan";
-import { useDeviceType } from "@/hooks/useDeviceType";
+
+import { ChatInterface } from "@/components/chat/ChatInterface";
+import { ChatSidebar } from "@/components/chat/ChatSidebar";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { SidebarProvider } from "@/components/ui/sidebar";
+
+import { supabase } from "@/integrations/supabase/client";
 
 export interface Chat {
   id: string;
@@ -37,7 +40,7 @@ const Chat = () => {
     if (deviceType !== "mobile") {
       openSidebar();
     }
-  }, [deviceType]);
+  }, [deviceType, openSidebar]);
 
   // React Query hooks
   const { data: subscriptionData, isLoading: isCheckingSubscription } =
@@ -53,7 +56,7 @@ const Chat = () => {
     if (currentPlan === "free" && subscriptionData?.status === "premium") {
       setUpdatePlan("premium");
     }
-  }, [subscriptionData]);
+  }, [subscriptionData, currentPlan, setUpdatePlan]);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -99,7 +102,7 @@ const Chat = () => {
     };
 
     checkAuth();
-  }, [navigate]);
+  }, [navigate, setPlanUserId]);
 
   // Sync server status into plan store
   useEffect(() => {
@@ -146,7 +149,9 @@ const Chat = () => {
       queryClient.invalidateQueries({
         queryKey: chatKeys.chats(userId as string),
       });
-    } catch {}
+    } catch {
+      console.log("catch err");
+    }
     toast.success("Judul chat berhasil diperbarui!");
   };
 
@@ -160,7 +165,9 @@ const Chat = () => {
       queryClient.invalidateQueries({
         queryKey: chatKeys.chats(userId as string),
       });
-    } catch {}
+    } catch {
+      console.log("catch");
+    }
     if (currentChatId === chatId) setCurrentChatId(null);
     toast.success("Chat berhasil dihapus!");
   };

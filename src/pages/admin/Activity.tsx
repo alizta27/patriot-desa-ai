@@ -1,9 +1,11 @@
-import { useActivityLogs } from '@/hooks/queries/admin';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Loader2, User, MessageSquare, CreditCard, Settings as SettingsIcon, Shield } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { id as idLocale } from 'date-fns/locale';
+import { CreditCard, Loader2, MessageSquare, Settings as SettingsIcon, Shield,User } from 'lucide-react';
+
+import { useActivityLogs } from '@/hooks/queries/admin';
+
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 const getActivityIcon = (type: string) => {
   switch (type) {

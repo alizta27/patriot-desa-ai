@@ -1,6 +1,8 @@
 import { Link } from "react-router-dom";
-import { Button } from "@/components/ui/button";
+
 import { appLogo } from "@/assets/images";
+
+import { Button } from "@/components/ui/button";
 
 const Header = () => {
   const scrollToSection = (sectionId: string) => {

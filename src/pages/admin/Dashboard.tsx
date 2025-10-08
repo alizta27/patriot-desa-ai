@@ -1,23 +1,25 @@
+import { DollarSign, Loader2,MessageSquare, TrendingUp, Users } from 'lucide-react';
 import {
-  useDashboardStats,
-  useUserGrowthData,
-  useQueryDistribution,
-} from '@/hooks/queries/admin';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Users, MessageSquare, TrendingUp, DollarSign, Loader2 } from 'lucide-react';
-import {
-  LineChart,
-  Line,
-  PieChart,
-  Pie,
+  CartesianGrid,
   Cell,
+  Legend,
+  Line,
+  LineChart,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
   XAxis,
   YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  Legend,
 } from 'recharts';
+
+import {
+  useDashboardStats,
+  useQueryDistribution,
+  useUserGrowthData,
+} from '@/hooks/queries/admin';
+
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 const COLORS = ['#8b5cf6', '#3b82f6', '#10b981', '#f59e0b'];
 

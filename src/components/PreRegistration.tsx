@@ -1,6 +1,8 @@
 import { useState } from "react";
+import { AlertCircle, CheckCircle, Gift, Mail } from "lucide-react";
+import { toast } from "@/components/ui/sonner-api";
+
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   Card,
   CardContent,
@@ -8,9 +10,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Gift, Mail, CheckCircle, AlertCircle } from "lucide-react";
+import { Input } from "@/components/ui/input";
+
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
 
 const PreRegistration = () => {
   const [email, setEmail] = useState("");

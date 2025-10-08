@@ -1,18 +1,20 @@
 // React Query hooks for admin dashboard
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { apiService } from '@/lib/api';
-import { toast } from 'sonner';
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "@/components/ui/sonner-api";
+
+import { apiService } from "@/lib/api";
 
 // Query Keys
 export const adminKeys = {
-  all: ['admin'] as const,
-  stats: () => [...adminKeys.all, 'stats'] as const,
-  users: () => [...adminKeys.all, 'users'] as const,
+  all: ["admin"] as const,
+  stats: () => [...adminKeys.all, "stats"] as const,
+  users: () => [...adminKeys.all, "users"] as const,
   user: (id: string) => [...adminKeys.users(), id] as const,
-  logs: () => [...adminKeys.all, 'logs'] as const,
-  settings: () => [...adminKeys.all, 'settings'] as const,
-  chartUserGrowth: () => [...adminKeys.all, 'chart', 'user-growth'] as const,
-  chartQueryDist: () => [...adminKeys.all, 'chart', 'query-distribution'] as const,
+  logs: () => [...adminKeys.all, "logs"] as const,
+  settings: () => [...adminKeys.all, "settings"] as const,
+  chartUserGrowth: () => [...adminKeys.all, "chart", "user-growth"] as const,
+  chartQueryDist: () =>
+    [...adminKeys.all, "chart", "query-distribution"] as const,
 };
 
 // Dashboard Stats
@@ -41,7 +43,7 @@ export const useAdminUsers = () => {
 
 export const useResetUserQuota = () => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: async (userId: string) => {
       const response = await apiService.resetUserQuota({ user_id: userId });
@@ -51,20 +53,20 @@ export const useResetUserQuota = () => {
       // Update the users cache
       queryClient.setQueryData(adminKeys.users(), (old: any[] | undefined) => {
         if (!old) return [updatedUser];
-        return old.map(u => u.id === updatedUser.id ? updatedUser : u);
+        return old.map((u) => (u.id === updatedUser.id ? updatedUser : u));
       });
       queryClient.invalidateQueries({ queryKey: adminKeys.stats() });
     },
     onError: (error: any) => {
-      console.error('Reset quota error:', error);
-      toast.error(error.response?.data?.error || 'Failed to reset quota');
+      console.error("Reset quota error:", error);
+      toast.error(error.response?.data?.error || "Failed to reset quota");
     },
   });
 };
 
 export const useDeleteUser = () => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: async (userId: string) => {
       const response = await apiService.deleteUser({ user_id: userId });
@@ -73,13 +75,13 @@ export const useDeleteUser = () => {
     onSuccess: (_, userId) => {
       queryClient.setQueryData(adminKeys.users(), (old: any[] | undefined) => {
         if (!old) return [];
-        return old.filter(u => u.id !== userId);
+        return old.filter((u) => u.id !== userId);
       });
       queryClient.invalidateQueries({ queryKey: adminKeys.stats() });
     },
     onError: (error: any) => {
-      console.error('Delete user error:', error);
-      toast.error(error.response?.data?.error || 'Failed to delete user');
+      console.error("Delete user error:", error);
+      toast.error(error.response?.data?.error || "Failed to delete user");
     },
   });
 };
@@ -110,7 +112,7 @@ export const useAdminSettings = () => {
 
 export const useUpdateSettings = () => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: async (updates: any) => {
       const response = await apiService.updateAdminSettings(updates);
@@ -118,11 +120,11 @@ export const useUpdateSettings = () => {
     },
     onSuccess: (updatedSettings) => {
       queryClient.setQueryData(adminKeys.settings(), updatedSettings);
-      toast.success('Settings updated successfully');
+      toast.success("Settings updated successfully");
     },
     onError: (error: any) => {
-      console.error('Update settings error:', error);
-      toast.error(error.response?.data?.error || 'Failed to update settings');
+      console.error("Update settings error:", error);
+      toast.error(error.response?.data?.error || "Failed to update settings");
     },
   });
 };

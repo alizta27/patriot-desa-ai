@@ -1,22 +1,24 @@
-import { Toaster } from "@/components/ui/toaster";
+import { BrowserRouter, Route,Routes } from "react-router-dom";
+
 import { Toaster as Sonner } from "@/components/ui/sonner";
+import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+
+import AdminLayout from "./components/admin/AdminLayout";
+import About from "./pages/About";
+import AdminActivity from "./pages/admin/Activity";
+import AdminLogin from "./pages/admin/AdminLogin";
+import AdminDashboard from "./pages/admin/Dashboard";
+import AdminSettings from "./pages/admin/Settings";
+import AdminUsers from "./pages/admin/Users";
+import Chat from "./pages/Chat";
+import CookiesPolicy from "./pages/CookiesPolicy";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
-import Onboarding from "./pages/Onboarding";
-import Chat from "./pages/Chat";
-import Subscription from "./pages/Subscription";
-import AdminDashboard from "./pages/admin/Dashboard";
-import AdminUsers from "./pages/admin/Users";
-import AdminSettings from "./pages/admin/Settings";
-import AdminActivity from "./pages/admin/Activity";
-import AdminLayout from "./components/admin/AdminLayout";
 import NotFound from "./pages/NotFound";
-import AdminLogin from "./pages/admin/AdminLogin";
+import Onboarding from "./pages/Onboarding";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
-import About from "./pages/About";
-import CookiesPolicy from "./pages/CookiesPolicy";
+import Subscription from "./pages/Subscription";
 import TermsOfUse from "./pages/TermsOfUse";
 import { ReactQueryProvider } from "./providers";
 

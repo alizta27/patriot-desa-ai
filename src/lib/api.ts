@@ -1,4 +1,5 @@
 import axios from "axios";
+
 import { supabase } from "@/integrations/supabase/client";
 
 // Create axios instance with base configuration

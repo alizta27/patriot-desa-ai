@@ -1,5 +1,5 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -42,7 +42,7 @@ serve(async (req) => {
     if (subscription_id) {
       const status = body.status; // "active", "pending", "expired", "cancelled", "failed"
 
-      let updates: any = {
+      const updates: any = {
         last_payment_id: subscription_id,
       };
 

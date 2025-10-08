@@ -1,4 +1,10 @@
+import { useEffect, useState } from "react";
+import { Loader2 } from "lucide-react";
+import { toast } from "@/components/ui/sonner-api";
+
 import { useAdminSettings, useUpdateSettings } from "@/hooks/queries/admin";
+
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -6,12 +12,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { toast } from "sonner";
-import { useState, useEffect } from "react";
-import { Loader2 } from "lucide-react";
 
 interface Settings {
   site_name: string;

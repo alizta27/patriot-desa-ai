@@ -1,8 +1,9 @@
 import { Link } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { ArrowLeft, Target, Users, Zap, Shield, Globe } from "lucide-react";
-import Header from "@/components/layout/Header";
+import { ArrowLeft, Globe,Shield, Target, Users, Zap } from "lucide-react";
+
 import Footer from "@/components/layout/Footer";
+import Header from "@/components/layout/Header";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,

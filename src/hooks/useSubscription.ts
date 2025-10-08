@@ -1,4 +1,4 @@
-import { useSubscriptionStatus, useCheckSubscription } from '@/hooks/queries/subscription';
+import { useCheckSubscription,useSubscriptionStatus } from '@/hooks/queries/subscription';
 
 interface SubscriptionStatus {
   status: "free" | "premium";

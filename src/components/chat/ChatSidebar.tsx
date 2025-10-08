@@ -1,19 +1,8 @@
 import { useMemo, useState } from "react";
-import { LogOut, Plus, MoreHorizontal, Search, X, Menu } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { LogOut, Menu,MoreHorizontal, Plus, Search, X } from "lucide-react";
+
 import type { Chat } from "@/pages/Chat";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+
 import {
   AlertDialog,
   AlertDialogAction,
@@ -24,6 +13,19 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface ChatSidebarProps {
   chats: Chat[];

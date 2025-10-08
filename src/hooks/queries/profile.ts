@@ -1,7 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { supabaseApi } from "@/lib/api";
-import { toast } from "sonner";
+import { toast } from "@/components/ui/sonner-api";
+
 import { subscriptionKeys } from "./subscription";
+
+import { supabaseApi } from "@/lib/api";
 
 // Query keys
 export const profileKeys = {

@@ -1,23 +1,13 @@
-import { useState } from 'react';
-import { useAdminUsers, useResetUserQuota, useDeleteUser } from '@/hooks/queries/admin';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { useState } from "react";
+import { Loader2, MoreVertical, RefreshCw, Search, Trash2 } from "lucide-react";
+import { toast } from "@/components/ui/sonner-api";
+
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+  useAdminUsers,
+  useDeleteUser,
+  useResetUserQuota,
+} from "@/hooks/queries/admin";
+
 import {
   AlertDialog,
   AlertDialogAction,
@@ -27,16 +17,38 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import { Loader2, MoreVertical, RefreshCw, Trash2, Search } from 'lucide-react';
-import { toast } from 'sonner';
+} from "@/components/ui/alert-dialog";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 interface User {
   id: string;
   name: string;
   email: string;
-  role: 'aparatur' | 'pendamping' | 'bumdes' | 'umum' | 'admin' | null;
-  subscription_status: 'free' | 'premium';
+  role: "aparatur" | "pendamping" | "bumdes" | "umum" | "admin" | null;
+  subscription_status: "free" | "premium";
   usage_count: number;
   daily_usage_reset_at: string;
   created_at: string;
@@ -47,7 +59,7 @@ export default function Users() {
   const { data: users, isLoading } = useAdminUsers();
   const resetQuota = useResetUserQuota();
   const deleteUser = useDeleteUser();
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState<string | null>(null);
 
@@ -56,20 +68,20 @@ export default function Users() {
       await resetQuota.mutateAsync(userId);
       toast.success(`Kuota ${userName} berhasil direset`);
     } catch (error) {
-      toast.error('Gagal reset kuota');
+      toast.error("Gagal reset kuota");
     }
   };
 
   const handleDeleteUser = async () => {
     if (!userToDelete) return;
-    
+
     try {
       await deleteUser.mutateAsync(userToDelete);
-      toast.success('Pengguna berhasil dihapus');
+      toast.success("Pengguna berhasil dihapus");
       setDeleteDialogOpen(false);
       setUserToDelete(null);
     } catch (error) {
-      toast.error('Gagal menghapus pengguna');
+      toast.error("Gagal menghapus pengguna");
     }
   };
 
@@ -78,26 +90,27 @@ export default function Users() {
     setDeleteDialogOpen(true);
   };
 
-  const filteredUsers = users?.filter((user) =>
-    user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.role?.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredUsers = users?.filter(
+    (user) =>
+      user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.role?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const getRoleBadgeColor = (role: string | null) => {
     switch (role) {
-      case 'aparatur':
-        return 'bg-purple-500/10 text-purple-500 border-purple-500/20';
-      case 'pendamping':
-        return 'bg-blue-500/10 text-blue-500 border-blue-500/20';
-      case 'bumdes':
-        return 'bg-green-500/10 text-green-500 border-green-500/20';
-      case 'umum':
-        return 'bg-orange-500/10 text-orange-500 border-orange-500/20';
-      case 'admin':
-        return 'bg-red-500/10 text-red-500 border-red-500/20';
+      case "aparatur":
+        return "bg-purple-500/10 text-purple-500 border-purple-500/20";
+      case "pendamping":
+        return "bg-blue-500/10 text-blue-500 border-blue-500/20";
+      case "bumdes":
+        return "bg-green-500/10 text-green-500 border-green-500/20";
+      case "umum":
+        return "bg-orange-500/10 text-orange-500 border-orange-500/20";
+      case "admin":
+        return "bg-red-500/10 text-red-500 border-red-500/20";
       default:
-        return 'bg-gray-500/10 text-gray-500 border-gray-500/20';
+        return "bg-gray-500/10 text-gray-500 border-gray-500/20";
     }
   };
 
@@ -125,7 +138,9 @@ export default function Users() {
           <div className="flex items-center justify-between">
             <div>
               <CardTitle>Daftar Pengguna</CardTitle>
-              <CardDescription>Total {users?.length || 0} pengguna terdaftar</CardDescription>
+              <CardDescription>
+                Total {users?.length || 0} pengguna terdaftar
+              </CardDescription>
             </div>
             <div className="relative w-64">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -154,25 +169,41 @@ export default function Users() {
               <TableBody>
                 {filteredUsers?.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                    <TableCell
+                      colSpan={6}
+                      className="text-center py-8 text-muted-foreground"
+                    >
                       Tidak ada pengguna ditemukan
                     </TableCell>
                   </TableRow>
                 ) : (
                   filteredUsers?.map((user) => (
                     <TableRow key={user.id}>
-                      <TableCell className="font-medium">{user.name || 'N/A'}</TableCell>
-                      <TableCell className="text-muted-foreground">{user.email}</TableCell>
+                      <TableCell className="font-medium">
+                        {user.name || "N/A"}
+                      </TableCell>
+                      <TableCell className="text-muted-foreground">
+                        {user.email}
+                      </TableCell>
                       <TableCell>
-                        <Badge variant="outline" className={getRoleBadgeColor(user.role)}>
-                          {user.role || 'Belum diatur'}
+                        <Badge
+                          variant="outline"
+                          className={getRoleBadgeColor(user.role)}
+                        >
+                          {user.role || "Belum diatur"}
                         </Badge>
                       </TableCell>
                       <TableCell>
                         <Badge
-                          variant={user.subscription_status === 'premium' ? 'default' : 'secondary'}
+                          variant={
+                            user.subscription_status === "premium"
+                              ? "default"
+                              : "secondary"
+                          }
                         >
-                          {user.subscription_status === 'premium' ? 'Premium' : 'Gratis'}
+                          {user.subscription_status === "premium"
+                            ? "Premium"
+                            : "Gratis"}
                         </Badge>
                       </TableCell>
                       <TableCell>
@@ -181,7 +212,9 @@ export default function Users() {
                             <div className="h-2 bg-muted rounded-full overflow-hidden">
                               <div
                                 className="h-full bg-primary transition-all"
-                                style={{ width: `${(user.usage_count / 5) * 100}%` }}
+                                style={{
+                                  width: `${(user.usage_count / 5) * 100}%`,
+                                }}
                               />
                             </div>
                           </div>
@@ -199,7 +232,9 @@ export default function Users() {
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
                             <DropdownMenuItem
-                              onClick={() => handleResetQuota(user.id, user.name)}
+                              onClick={() =>
+                                handleResetQuota(user.id, user.name)
+                              }
                               disabled={resetQuota.isPending}
                             >
                               <RefreshCw className="h-4 w-4 mr-2" />
@@ -230,8 +265,8 @@ export default function Users() {
           <AlertDialogHeader>
             <AlertDialogTitle>Konfirmasi Hapus Pengguna</AlertDialogTitle>
             <AlertDialogDescription>
-              Apakah Anda yakin ingin menghapus pengguna ini? Tindakan ini tidak dapat dibatalkan
-              dan akan menghapus semua data terkait pengguna.
+              Apakah Anda yakin ingin menghapus pengguna ini? Tindakan ini tidak
+              dapat dibatalkan dan akan menghapus semua data terkait pengguna.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

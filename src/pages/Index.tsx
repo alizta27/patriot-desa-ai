@@ -1,19 +1,21 @@
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Link } from "react-router-dom";
 import {
-  MessageSquare,
-  Users,
-  Sparkles,
-  HeadphonesIcon,
   ArrowRight,
   CheckCircle,
+  HeadphonesIcon,
+  MessageSquare,
+  Sparkles,
   Star,
+  Users,
 } from "lucide-react";
-import { Link } from "react-router-dom";
-import Header from "@/components/layout/Header";
-import Footer from "@/components/layout/Footer";
-import PreRegistration from "@/components/PreRegistration";
+
 import { appLogo } from "@/assets/images";
+
+import Footer from "@/components/layout/Footer";
+import Header from "@/components/layout/Header";
+import PreRegistration from "@/components/PreRegistration";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 
 const Index = () => {
   return (

@@ -1,5 +1,14 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { ArrowLeft, Check } from "lucide-react";
+import { toast } from "@/components/ui/sonner-api";
+
+import {
+  useCreateSubscription,
+  useSubscriptionStatus,
+} from "@/hooks/queries/subscription";
+import { usePlanStore } from "@/store/plan";
+
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -9,15 +18,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Check, ArrowLeft } from "lucide-react";
+
 import { supabase } from "@/integrations/supabase/client";
 import { supabaseApi } from "@/lib/api";
-import { toast } from "sonner";
-import {
-  useSubscriptionStatus,
-  useCreateSubscription,
-} from "@/hooks/queries/subscription";
-import { usePlanStore } from "@/store/plan";
 import { cn } from "@/lib/utils";
 
 declare global {
@@ -76,7 +79,7 @@ const Subscription = () => {
       setPlanUserId(session.user.id);
     };
     checkAuth();
-  }, [navigate]);
+  }, [navigate, setPlanUserId]);
 
   // Sync server status into plan store for cross-page availability
   useEffect(() => {

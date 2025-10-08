@@ -1,8 +1,9 @@
 import { Link } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { ArrowLeft, Cookie, Settings, Shield, Eye } from "lucide-react";
-import Header from "@/components/layout/Header";
+import { ArrowLeft, Cookie, Eye,Settings, Shield } from "lucide-react";
+
 import Footer from "@/components/layout/Footer";
+import Header from "@/components/layout/Header";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,

@@ -12,12 +12,20 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { useState, useEffect } from "react";
 import { Loader2 } from "lucide-react";
-import type { MockSettings } from "@/lib/mockApi";
+
+interface Settings {
+  site_name: string;
+  maintenance_mode: boolean;
+  max_free_queries: number;
+  subscription_price: number;
+  email_notifications: boolean;
+  auto_backup: boolean;
+}
 
 export default function Settings() {
   const { data: settings, isLoading } = useAdminSettings();
   const updateSettings = useUpdateSettings();
-  const [formData, setFormData] = useState<MockSettings>({
+  const [formData, setFormData] = useState<Settings>({
     site_name: "Patriot Desa",
     maintenance_mode: false,
     max_free_queries: 5,

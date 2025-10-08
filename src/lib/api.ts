@@ -67,6 +67,28 @@ export const apiService = {
     customer_email: string;
     card_token?: string;
   }) => api.post("/midtrans-subscription", data),
+
+  // Admin APIs
+  getDashboardStats: () => api.post("/admin-dashboard-stats", {}),
+  
+  getAdminUsers: () => api.post("/admin-users", {}),
+  
+  resetUserQuota: (data: { user_id: string }) => 
+    api.post("/admin-reset-quota", data),
+  
+  deleteUser: (data: { user_id: string }) => 
+    api.post("/admin-delete-user", data),
+  
+  getActivityLogs: (data: { limit?: number }) => 
+    api.post("/admin-activity-logs", data),
+  
+  getAdminSettings: () => api.post("/admin-settings", {}),
+  
+  updateAdminSettings: (data: any) => api.put("/admin-settings", data),
+  
+  getUserGrowthData: () => api.post("/admin-user-growth", {}),
+  
+  getQueryDistribution: () => api.post("/admin-query-distribution", {}),
 };
 
 // Direct Supabase API calls (for database operations)

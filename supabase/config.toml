@@ -5,3 +5,45 @@ enabled = true
 
 [functions.chat-ai]
 verify_jwt = true
+
+[functions.check-subscription]
+verify_jwt = true
+
+[functions.create-subscription]
+verify_jwt = true
+
+[functions.midtrans-subscription]
+verify_jwt = true
+
+[functions.midtrans-token]
+verify_jwt = true
+
+[functions.midtrans-webhook]
+verify_jwt = false
+
+[functions.payment-webhook]
+verify_jwt = false
+
+[functions.admin-dashboard-stats]
+verify_jwt = true
+
+[functions.admin-users]
+verify_jwt = true
+
+[functions.admin-reset-quota]
+verify_jwt = true
+
+[functions.admin-delete-user]
+verify_jwt = true
+
+[functions.admin-activity-logs]
+verify_jwt = true
+
+[functions.admin-settings]
+verify_jwt = true
+
+[functions.admin-user-growth]
+verify_jwt = true
+
+[functions.admin-query-distribution]
+verify_jwt = true

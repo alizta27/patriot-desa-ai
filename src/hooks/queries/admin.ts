@@ -1,7 +1,7 @@
 // React Query hooks for admin dashboard
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { mockApi } from '@/lib/mockApi';
-import type { MockUser, MockSettings } from '@/lib/mockApi';
+import { apiService } from '@/lib/api';
+import { toast } from 'sonner';
 
 // Query Keys
 export const adminKeys = {
@@ -19,7 +19,10 @@ export const adminKeys = {
 export const useDashboardStats = () => {
   return useQuery({
     queryKey: adminKeys.stats(),
-    queryFn: mockApi.getDashboardStats,
+    queryFn: async () => {
+      const response = await apiService.getDashboardStats();
+      return response.data.data;
+    },
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
 };
@@ -28,7 +31,10 @@ export const useDashboardStats = () => {
 export const useAdminUsers = () => {
   return useQuery({
     queryKey: adminKeys.users(),
-    queryFn: mockApi.getUsers,
+    queryFn: async () => {
+      const response = await apiService.getAdminUsers();
+      return response.data.data;
+    },
     staleTime: 1000 * 60 * 2, // 2 minutes
   });
 };
@@ -37,14 +43,21 @@ export const useResetUserQuota = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: (userId: string) => mockApi.resetUserQuota(userId),
+    mutationFn: async (userId: string) => {
+      const response = await apiService.resetUserQuota({ user_id: userId });
+      return response.data.data;
+    },
     onSuccess: (updatedUser) => {
       // Update the users cache
-      queryClient.setQueryData(adminKeys.users(), (old: MockUser[] | undefined) => {
+      queryClient.setQueryData(adminKeys.users(), (old: any[] | undefined) => {
         if (!old) return [updatedUser];
         return old.map(u => u.id === updatedUser.id ? updatedUser : u);
       });
       queryClient.invalidateQueries({ queryKey: adminKeys.stats() });
+    },
+    onError: (error: any) => {
+      console.error('Reset quota error:', error);
+      toast.error(error.response?.data?.error || 'Failed to reset quota');
     },
   });
 };
@@ -53,13 +66,20 @@ export const useDeleteUser = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: (userId: string) => mockApi.deleteUser(userId),
+    mutationFn: async (userId: string) => {
+      const response = await apiService.deleteUser({ user_id: userId });
+      return response.data;
+    },
     onSuccess: (_, userId) => {
-      queryClient.setQueryData(adminKeys.users(), (old: MockUser[] | undefined) => {
+      queryClient.setQueryData(adminKeys.users(), (old: any[] | undefined) => {
         if (!old) return [];
         return old.filter(u => u.id !== userId);
       });
       queryClient.invalidateQueries({ queryKey: adminKeys.stats() });
+    },
+    onError: (error: any) => {
+      console.error('Delete user error:', error);
+      toast.error(error.response?.data?.error || 'Failed to delete user');
     },
   });
 };
@@ -68,7 +88,10 @@ export const useDeleteUser = () => {
 export const useActivityLogs = (limit?: number) => {
   return useQuery({
     queryKey: [...adminKeys.logs(), limit],
-    queryFn: () => mockApi.getActivityLogs(limit),
+    queryFn: async () => {
+      const response = await apiService.getActivityLogs({ limit });
+      return response.data.data;
+    },
     staleTime: 1000 * 60, // 1 minute
   });
 };
@@ -77,7 +100,10 @@ export const useActivityLogs = (limit?: number) => {
 export const useAdminSettings = () => {
   return useQuery({
     queryKey: adminKeys.settings(),
-    queryFn: mockApi.getSettings,
+    queryFn: async () => {
+      const response = await apiService.getAdminSettings();
+      return response.data.data;
+    },
     staleTime: 1000 * 60 * 10, // 10 minutes
   });
 };
@@ -86,9 +112,17 @@ export const useUpdateSettings = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: (updates: Partial<MockSettings>) => mockApi.updateSettings(updates),
+    mutationFn: async (updates: any) => {
+      const response = await apiService.updateAdminSettings(updates);
+      return response.data.data;
+    },
     onSuccess: (updatedSettings) => {
       queryClient.setQueryData(adminKeys.settings(), updatedSettings);
+      toast.success('Settings updated successfully');
+    },
+    onError: (error: any) => {
+      console.error('Update settings error:', error);
+      toast.error(error.response?.data?.error || 'Failed to update settings');
     },
   });
 };
@@ -97,7 +131,10 @@ export const useUpdateSettings = () => {
 export const useUserGrowthData = () => {
   return useQuery({
     queryKey: adminKeys.chartUserGrowth(),
-    queryFn: mockApi.getUserGrowthData,
+    queryFn: async () => {
+      const response = await apiService.getUserGrowthData();
+      return response.data.data;
+    },
     staleTime: 1000 * 60 * 30, // 30 minutes
   });
 };
@@ -105,7 +142,10 @@ export const useUserGrowthData = () => {
 export const useQueryDistribution = () => {
   return useQuery({
     queryKey: adminKeys.chartQueryDist(),
-    queryFn: mockApi.getQueryDistribution,
+    queryFn: async () => {
+      const response = await apiService.getQueryDistribution();
+      return response.data.data;
+    },
     staleTime: 1000 * 60 * 30, // 30 minutes
   });
 };

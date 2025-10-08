@@ -30,7 +30,18 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Loader2, MoreVertical, RefreshCw, Trash2, Search } from 'lucide-react';
 import { toast } from 'sonner';
-import type { MockUser } from '@/lib/mockApi';
+
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  role: 'aparatur' | 'pendamping' | 'bumdes' | 'umum' | 'admin' | null;
+  subscription_status: 'free' | 'premium';
+  usage_count: number;
+  daily_usage_reset_at: string;
+  created_at: string;
+  phone_number?: string;
+}
 
 export default function Users() {
   const { data: users, isLoading } = useAdminUsers();

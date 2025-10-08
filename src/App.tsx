@@ -9,6 +9,9 @@ import Chat from "./pages/Chat";
 import Subscription from "./pages/Subscription";
 import AdminDashboard from "./pages/admin/Dashboard";
 import AdminUsers from "./pages/admin/Users";
+import AdminSettings from "./pages/admin/Settings";
+import AdminActivity from "./pages/admin/Activity";
+import AdminLayout from "./components/admin/AdminLayout";
 import NotFound from "./pages/NotFound";
 import AdminLogin from "./pages/admin/AdminLogin";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
@@ -34,8 +37,12 @@ const App = () => (
           <Route path="/cookies-policy" element={<CookiesPolicy />} />
           <Route path="/terms-of-use" element={<TermsOfUse />} />
           <Route path="/admin/login" element={<AdminLogin />} />
-          <Route path="/admin/dashboard" element={<AdminDashboard />} />
-          <Route path="/admin/users" element={<AdminUsers />} />
+          <Route path="/admin" element={<AdminLayout />}>
+            <Route path="dashboard" element={<AdminDashboard />} />
+            <Route path="users" element={<AdminUsers />} />
+            <Route path="activity" element={<AdminActivity />} />
+            <Route path="settings" element={<AdminSettings />} />
+          </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

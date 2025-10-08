@@ -1,6 +1,6 @@
-import { useState } from 'react';
-import { Outlet, useNavigate, useLocation } from 'react-router-dom';
-import { cn } from '@/lib/utils';
+import { useState } from "react";
+import { Outlet, useNavigate, useLocation } from "react-router-dom";
+import { cn } from "@/lib/utils";
 import {
   LayoutDashboard,
   Users,
@@ -10,19 +10,11 @@ import {
   X,
   LogOut,
   ChevronLeft,
-  Moon,
-  Sun,
-} from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { useTheme } from 'next-themes';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface NavItem {
   title: string;
@@ -32,23 +24,23 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   {
-    title: 'Dashboard',
-    href: '/admin/dashboard',
+    title: "Dashboard",
+    href: "/admin/dashboard",
     icon: <LayoutDashboard className="h-5 w-5" />,
   },
   {
-    title: 'Kelola Pengguna',
-    href: '/admin/users',
+    title: "Kelola Pengguna",
+    href: "/admin/users",
     icon: <Users className="h-5 w-5" />,
   },
   {
-    title: 'Aktivitas',
-    href: '/admin/activity',
+    title: "Aktivitas",
+    href: "/admin/activity",
     icon: <Activity className="h-5 w-5" />,
   },
   {
-    title: 'Pengaturan',
-    href: '/admin/settings',
+    title: "Pengaturan",
+    href: "/admin/settings",
     icon: <Settings className="h-5 w-5" />,
   },
 ];
@@ -58,12 +50,11 @@ export default function AdminLayout() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-  const { theme, setTheme } = useTheme();
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    toast.success('Berhasil keluar');
-    navigate('/admin/login');
+    toast.success("Berhasil keluar");
+    navigate("/admin/login");
   };
 
   const isActive = (href: string) => location.pathname === href;
@@ -73,15 +64,17 @@ export default function AdminLayout() {
       {/* Sidebar - Desktop */}
       <aside
         className={cn(
-          'fixed left-0 top-0 z-40 h-screen transition-all duration-300 hidden lg:block border-r bg-card',
-          sidebarOpen ? 'w-64' : 'w-20'
+          "fixed left-0 top-0 z-40 h-screen transition-all duration-300 hidden lg:block border-r bg-card",
+          sidebarOpen ? "w-64" : "w-20"
         )}
       >
         <div className="flex h-full flex-col">
           {/* Logo */}
           <div className="flex h-16 items-center border-b px-4">
             {sidebarOpen ? (
-              <h1 className="text-xl font-bold text-primary">Patriot Desa Admin</h1>
+              <h1 className="text-xl font-bold text-primary">
+                Patriot Desa Admin
+              </h1>
             ) : (
               <span className="text-2xl font-bold text-primary">PD</span>
             )}
@@ -94,10 +87,10 @@ export default function AdminLayout() {
                 key={item.href}
                 onClick={() => navigate(item.href)}
                 className={cn(
-                  'flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
+                  "flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
                   isActive(item.href)
-                    ? 'bg-primary text-primary-foreground'
-                    : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
                 )}
               >
                 {item.icon}
@@ -116,8 +109,8 @@ export default function AdminLayout() {
             >
               <ChevronLeft
                 className={cn(
-                  'h-5 w-5 transition-transform',
-                  !sidebarOpen && 'rotate-180'
+                  "h-5 w-5 transition-transform",
+                  !sidebarOpen && "rotate-180"
                 )}
               />
               {sidebarOpen && <span className="ml-2">Ciutkan</span>}
@@ -136,7 +129,9 @@ export default function AdminLayout() {
           <aside className="fixed left-0 top-0 z-50 h-screen w-64 border-r bg-card lg:hidden">
             <div className="flex h-full flex-col">
               <div className="flex h-16 items-center justify-between border-b px-4">
-                <h1 className="text-xl font-bold text-primary">Patriot Desa Admin</h1>
+                <h1 className="text-xl font-bold text-primary">
+                  Patriot Desa Admin
+                </h1>
                 <Button
                   variant="ghost"
                   size="icon"
@@ -155,10 +150,10 @@ export default function AdminLayout() {
                       setMobileMenuOpen(false);
                     }}
                     className={cn(
-                      'flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
+                      "flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
                       isActive(item.href)
-                        ? 'bg-primary text-primary-foreground'
-                        : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
+                        ? "bg-primary text-primary-foreground"
+                        : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
                     )}
                   >
                     {item.icon}
@@ -174,8 +169,8 @@ export default function AdminLayout() {
       {/* Main Content */}
       <div
         className={cn(
-          'transition-all duration-300',
-          sidebarOpen ? 'lg:pl-64' : 'lg:pl-20'
+          "transition-all duration-300",
+          sidebarOpen ? "lg:pl-64" : "lg:pl-20"
         )}
       >
         {/* Header */}
@@ -190,28 +185,6 @@ export default function AdminLayout() {
           </Button>
 
           <div className="flex-1" />
-
-          {/* Theme Toggle */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon">
-                <Sun className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-                <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-                <span className="sr-only">Toggle theme</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => setTheme('light')}>
-                Terang
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setTheme('dark')}>
-                Gelap
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setTheme('system')}>
-                Sistem
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
 
           {/* Logout Button */}
           <Button variant="ghost" size="sm" onClick={handleLogout}>

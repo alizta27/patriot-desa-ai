@@ -1,0 +1,62 @@
+**Task:**  
+Redesign and rebuild my existing Admin Dashboard UI to make it look like a professional, modern admin dashboard with **Server-Side Rendering (SSR)** and **React Query** for data handling.
+
+---
+
+**Important:**  
+- All text, labels, buttons, and interface elements in the UI must use **Bahasa Indonesia**, since the app is for Indonesian users.  
+- Do **not** modify, replace, or migrate any existing database configuration — including **Supabase**.  
+- Do **not** set up PostgreSQL, Drizzle, or any new database.  
+- This task focuses **only on the UI** and **mocked API responses** using **React Query**.  
+
+---
+
+**Goals:**
+
+1. Make the UI visually polished, consistent, and responsive.  
+2. Add a left sidebar (for navigation), a top header (for title, profile, and logout), and clean main content sections.  
+3. Include common admin dashboard features and missing UI parts that enhance usability (e.g., search bar, notifications, analytics cards, data tables, etc.).  
+4. Add a proper layout with a menu button toggle for the sidebar (mobile-friendly).  
+5. Include a working logout button (mock only for now).  
+6. Use **React Query** to handle mock API calls — mock the responses using local JSON or static data.  
+7. Implement **Server-Side Rendering (SSR)** for better performance and SEO.  
+8. Keep the code modular, reusable, and cleanly structured.  
+
+---
+
+**Tech Preferences (adjust if needed):**
+
+- Framework: **React** with **SSR support** (React Router v7 or frameworks like Remix/Next.js if needed).  
+- Data Layer: **React Query** with mocked API handlers.  
+- Styling: **Tailwind CSS** (or a similar modern styling system).  
+- Routing: **React Router v7 (latest)** for navigation and SSR routes.  
+- Icons: `lucide-react` or `react-icons`.  
+- Optional: Add simple charts using `recharts` or `chart.js` for analytics/overview.  
+
+---
+
+**Pages inside admin dashboard:**
+
+- **Dashboard:** Overview with cards, charts, and quick stats.  
+- **User Management:** User table with add/edit/delete mock functionality using React Query.  
+- **Settings:** Account and system configuration.  
+- **Logs / Activity:** Optional but recommended.  
+
+---
+
+**Visual Style References:**
+
+- Clean, modern admin layout (e.g., TailAdmin, Shadcn UI, or MUI dashboards).  
+- Support for light and dark modes if possible.  
+
+---
+
+**Output Expectations:**
+
+- A complete working **React SSR project** using **React Query** for mocked data.  
+- All UI text written in **Bahasa Indonesia**.  
+- Organized folder structure: `/components`, `/pages`, `/api/mock`, `/assets`, etc.  
+- Clear, well-commented, and modular code — easy to extend later.  
+- Do **not** modify, replace, or migrate any existing database configuration — including **Supabase**.  
+- Do **not** set up PostgreSQL, Drizzle, or any new database.  
+- This task focuses **only on the UI** and **mocked API responses** using **React Query**.  

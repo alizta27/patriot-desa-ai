@@ -1,20 +1,24 @@
-import { useAdminSettings, useUpdateSettings } from '@/hooks/queries/admin';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
-import { Separator } from '@/components/ui/separator';
-import { toast } from 'sonner';
-import { useState, useEffect } from 'react';
-import { Loader2 } from 'lucide-react';
-import type { MockSettings } from '@/lib/mockApi';
+import { useAdminSettings, useUpdateSettings } from "@/hooks/queries/admin";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { toast } from "sonner";
+import { useState, useEffect } from "react";
+import { Loader2 } from "lucide-react";
+import type { MockSettings } from "@/lib/mockApi";
 
 export default function Settings() {
   const { data: settings, isLoading } = useAdminSettings();
   const updateSettings = useUpdateSettings();
   const [formData, setFormData] = useState<MockSettings>({
-    site_name: 'Patriot Desa',
+    site_name: "Patriot Desa",
     maintenance_mode: false,
     max_free_queries: 5,
     subscription_price: 99000,
@@ -32,9 +36,9 @@ export default function Settings() {
     e.preventDefault();
     try {
       await updateSettings.mutateAsync(formData);
-      toast.success('Pengaturan berhasil disimpan');
+      toast.success("Pengaturan berhasil disimpan");
     } catch (error) {
-      toast.error('Gagal menyimpan pengaturan');
+      toast.error("Gagal menyimpan pengaturan");
     }
   };
 
@@ -59,17 +63,17 @@ export default function Settings() {
         <Card>
           <CardHeader>
             <CardTitle>Pengaturan Umum</CardTitle>
-            <CardDescription>
-              Konfigurasi dasar aplikasi
-            </CardDescription>
+            <CardDescription>Konfigurasi dasar aplikasi</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="siteName">Nama Situs</Label>
               <Input
                 id="siteName"
-                value={formData.site_name || ''}
-                onChange={(e) => setFormData({ ...formData, site_name: e.target.value })}
+                value={formData.site_name || ""}
+                onChange={(e) =>
+                  setFormData({ ...formData, site_name: e.target.value })
+                }
               />
             </div>
 
@@ -80,7 +84,10 @@ export default function Settings() {
                 type="number"
                 value={formData.max_free_queries || 5}
                 onChange={(e) =>
-                  setFormData({ ...formData, max_free_queries: parseInt(e.target.value) })
+                  setFormData({
+                    ...formData,
+                    max_free_queries: parseInt(e.target.value),
+                  })
                 }
               />
             </div>
@@ -92,14 +99,18 @@ export default function Settings() {
                 type="number"
                 value={formData.subscription_price || 99000}
                 onChange={(e) =>
-                  setFormData({ ...formData, subscription_price: parseInt(e.target.value) })
+                  setFormData({
+                    ...formData,
+                    subscription_price: parseInt(e.target.value),
+                  })
                 }
               />
             </div>
           </CardContent>
         </Card>
 
-        <Card>
+        {/* Do not do for now! We will decide on when to do this later after publishing the App */}
+        {/* <Card>
           <CardHeader>
             <CardTitle>Fitur</CardTitle>
             <CardDescription>
@@ -159,11 +170,13 @@ export default function Settings() {
               />
             </div>
           </CardContent>
-        </Card>
+        </Card> */}
 
         <div className="flex justify-end">
           <Button type="submit" disabled={updateSettings.isPending}>
-            {updateSettings.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {updateSettings.isPending && (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            )}
             Simpan Perubahan
           </Button>
         </div>

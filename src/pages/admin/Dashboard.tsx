@@ -1,264 +1,226 @@
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+  useDashboardStats,
+  useUserGrowthData,
+  useQueryDistribution,
+} from '@/hooks/queries/admin';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Users, MessageSquare, TrendingUp, DollarSign, Loader2 } from 'lucide-react';
 import {
-  Users,
-  MessageSquare,
-  TrendingUp,
-  DollarSign,
-  ArrowLeft,
-} from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
+  LineChart,
+  Line,
+  PieChart,
+  Pie,
+  Cell,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  Legend,
+} from 'recharts';
 
-const Dashboard = () => {
-  const navigate = useNavigate();
-  const [stats, setStats] = useState({
-    totalUsers: 0,
-    aparatur: 0,
-    pendamping: 0,
-    bumdes: 0,
-    umum: 0,
-    totalQuestions: 0,
-    premiumUsers: 0,
-    totalRevenue: 0,
-  });
-  const [isLoading, setIsLoading] = useState(true);
+const COLORS = ['#8b5cf6', '#3b82f6', '#10b981', '#f59e0b'];
 
-  useEffect(() => {
-    const checkAdmin = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      if (!session) {
-        navigate("/login");
-        return;
-      }
+export default function Dashboard() {
+  const { data: stats, isLoading: statsLoading } = useDashboardStats();
+  const { data: userGrowth, isLoading: growthLoading } = useUserGrowthData();
+  const { data: queryDist, isLoading: distLoading } = useQueryDistribution();
 
-      const { data: hasAdminRole } = await supabase.rpc("has_role", {
-        _user_id: session.user.id,
-        _role: "admin",
-      });
-
-      if (!hasAdminRole) {
-        toast.error(
-          "Akses ditolak. Hanya admin yang dapat mengakses halaman ini."
-        );
-        navigate("/chat");
-        return;
-      }
-
-      loadStats();
-    };
-    checkAdmin();
-  }, [navigate]);
-
-  const loadStats = async () => {
-    setIsLoading(true);
-
-    // Total users
-    const { count: totalUsers } = await supabase
-      .from("profiles")
-      .select("*", { count: "exact", head: true });
-
-    // Users by role
-    const { data: roleStats } = await supabase.from("profiles").select("role");
-
-    const aparatur =
-      roleStats?.filter((r) => r.role === "aparatur").length || 0;
-    const pendamping =
-      roleStats?.filter((r) => r.role === "pendamping").length || 0;
-    const bumdes = roleStats?.filter((r) => r.role === "bumdes").length || 0;
-    const umum = roleStats?.filter((r) => r.role === "umum").length || 0;
-
-    // Total questions (messages)
-    const { count: totalQuestions } = await supabase
-      .from("chat_messages")
-      .select("*", { count: "exact", head: true })
-      .eq("role", "user");
-
-    // Premium users
-    const { count: premiumUsers } = await supabase
-      .from("profiles")
-      .select("*", { count: "exact", head: true })
-      .eq("subscription_status", "premium");
-
-    // Total revenue
-    const { data: subscriptions } = await supabase
-      .from("subscriptions")
-      .select("amount_paid");
-
-    const totalRevenue =
-      subscriptions?.reduce(
-        (sum, sub) => sum + (Number(sub.amount_paid) || 0),
-        0
-      ) || 0;
-
-    setStats({
-      totalUsers: totalUsers || 0,
-      aparatur,
-      pendamping,
-      bumdes,
-      umum,
-      totalQuestions: totalQuestions || 0,
-      premiumUsers: premiumUsers || 0,
-      totalRevenue,
-    });
-
-    setIsLoading(false);
-  };
-
-  if (isLoading) {
+  if (statsLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p>Loading...</p>
+      <div className="flex items-center justify-center h-96">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    navigate("/");
-  };
+  const statsCards = [
+    {
+      title: 'Total Pengguna',
+      value: stats?.totalUsers || 0,
+      description: 'Pengguna terdaftar',
+      icon: Users,
+      color: 'text-blue-500',
+      bgColor: 'bg-blue-500/10',
+    },
+    {
+      title: 'Total Pertanyaan',
+      value: stats?.totalQuestions || 0,
+      description: 'Pertanyaan diajukan',
+      icon: MessageSquare,
+      color: 'text-green-500',
+      bgColor: 'bg-green-500/10',
+    },
+    {
+      title: 'Pengguna Premium',
+      value: stats?.premiumUsers || 0,
+      description: 'Subscriber aktif',
+      icon: TrendingUp,
+      color: 'text-purple-500',
+      bgColor: 'bg-purple-500/10',
+    },
+    {
+      title: 'Total Pendapatan',
+      value: `Rp ${(stats?.totalRevenue || 0).toLocaleString('id-ID')}`,
+      description: 'Pendapatan kumulatif',
+      icon: DollarSign,
+      color: 'text-orange-500',
+      bgColor: 'bg-orange-500/10',
+    },
+  ];
+
+  const roleData = [
+    { name: 'Aparatur Desa', value: stats?.aparatur || 0, color: '#8b5cf6' },
+    { name: 'Pendamping Desa', value: stats?.pendamping || 0, color: '#3b82f6' },
+    { name: 'BUMDes/Kopdes', value: stats?.bumdes || 0, color: '#10b981' },
+    { name: 'Pengguna Umum', value: stats?.umum || 0, color: '#f59e0b' },
+  ];
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-3xl font-bold mb-2">Dashboard Admin</h1>
-            <p className="text-muted-foreground">
-              Statistik dan analitik platform
-            </p>
-          </div>
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={() => navigate("/admin/users")}>
-              Kelola Pengguna
-            </Button>
-            <Button variant="outline" onClick={handleLogout}>
-              Keluar
-            </Button>
-          </div>
-        </div>
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+        <p className="text-muted-foreground mt-2">
+          Ringkasan dan analitik platform Patriot Desa
+        </p>
+      </div>
 
-        {/* Stats Overview */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">
-                Total Pengguna
-              </CardTitle>
-              <Users className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.totalUsers}</div>
-              <p className="text-xs text-muted-foreground mt-1">
-                Pengguna terdaftar
-              </p>
-            </CardContent>
-          </Card>
+      {/* Stats Cards */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        {statsCards.map((stat) => {
+          const Icon = stat.icon;
+          return (
+            <Card key={stat.title}>
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
+                <div className={`${stat.bgColor} ${stat.color} p-2 rounded-lg`}>
+                  <Icon className="h-4 w-4" />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{stat.value}</div>
+                <p className="text-xs text-muted-foreground mt-1">{stat.description}</p>
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">
-                Total Pertanyaan
-              </CardTitle>
-              <MessageSquare className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.totalQuestions}</div>
-              <p className="text-xs text-muted-foreground mt-1">
-                Pertanyaan diajukan
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">
-                Pengguna Premium
-              </CardTitle>
-              <TrendingUp className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.premiumUsers}</div>
-              <p className="text-xs text-muted-foreground mt-1">
-                Subscriber aktif
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">
-                Total Pendapatan
-              </CardTitle>
-              <DollarSign className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                Rp {stats.totalRevenue.toLocaleString("id-ID")}
-              </div>
-              <p className="text-xs text-muted-foreground mt-1">
-                Pendapatan kumulatif
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Role Distribution */}
+      <div className="grid gap-6 md:grid-cols-2">
+        {/* User Growth Chart */}
         <Card>
           <CardHeader>
-            <CardTitle>Distribusi Pengguna per Role</CardTitle>
-            <CardDescription>
-              Jumlah pengguna berdasarkan peran mereka
-            </CardDescription>
+            <CardTitle>Pertumbuhan Pengguna</CardTitle>
+            <CardDescription>Jumlah pengguna baru per bulan</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid md:grid-cols-4 gap-4">
-              <div className="p-4 bg-primary/5 rounded-lg">
-                <p className="text-sm text-muted-foreground mb-1">
-                  Aparatur Desa
-                </p>
-                <p className="text-2xl font-bold text-primary">
-                  {stats.aparatur}
-                </p>
+            {growthLoading ? (
+              <div className="flex items-center justify-center h-64">
+                <Loader2 className="h-6 w-6 animate-spin text-primary" />
               </div>
-              <div className="p-4 bg-primary/5 rounded-lg">
-                <p className="text-sm text-muted-foreground mb-1">
-                  Pendamping Desa
-                </p>
-                <p className="text-2xl font-bold text-primary">
-                  {stats.pendamping}
-                </p>
+            ) : (
+              <ResponsiveContainer width="100%" height={300}>
+                <LineChart data={userGrowth}>
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                  <XAxis
+                    dataKey="month"
+                    className="text-xs"
+                    tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                  />
+                  <YAxis
+                    className="text-xs"
+                    tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: 'hsl(var(--card))',
+                      border: '1px solid hsl(var(--border))',
+                      borderRadius: '8px',
+                    }}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="users"
+                    stroke="hsl(var(--primary))"
+                    strokeWidth={2}
+                    dot={{ fill: 'hsl(var(--primary))' }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Query Distribution Chart */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Distribusi Pertanyaan</CardTitle>
+            <CardDescription>Kategori pertanyaan yang diajukan</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {distLoading ? (
+              <div className="flex items-center justify-center h-64">
+                <Loader2 className="h-6 w-6 animate-spin text-primary" />
               </div>
-              <div className="p-4 bg-primary/5 rounded-lg">
-                <p className="text-sm text-muted-foreground mb-1">
-                  BUMDes/Kopdes
-                </p>
-                <p className="text-2xl font-bold text-primary">
-                  {stats.bumdes}
-                </p>
-              </div>
-              <div className="p-4 bg-primary/5 rounded-lg">
-                <p className="text-sm text-muted-foreground mb-1">
-                  Pengguna Umum
-                </p>
-                <p className="text-2xl font-bold text-primary">{stats.umum}</p>
-              </div>
-            </div>
+            ) : (
+              <ResponsiveContainer width="100%" height={300}>
+                <PieChart>
+                  <Pie
+                    data={queryDist}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="value"
+                  >
+                    {queryDist?.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: 'hsl(var(--card))',
+                      border: '1px solid hsl(var(--border))',
+                      borderRadius: '8px',
+                    }}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            )}
           </CardContent>
         </Card>
       </div>
+
+      {/* Role Distribution */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Distribusi Pengguna per Role</CardTitle>
+          <CardDescription>Jumlah pengguna berdasarkan peran mereka</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid md:grid-cols-4 gap-4">
+            {roleData.map((role) => (
+              <div
+                key={role.name}
+                className="p-4 rounded-lg border bg-card hover:shadow-md transition-shadow"
+              >
+                <div className="flex items-center gap-2 mb-2">
+                  <div
+                    className="h-3 w-3 rounded-full"
+                    style={{ backgroundColor: role.color }}
+                  />
+                  <p className="text-sm text-muted-foreground">{role.name}</p>
+                </div>
+                <p className="text-2xl font-bold" style={{ color: role.color }}>
+                  {role.value}
+                </p>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
-};
-
-export default Dashboard;
+}

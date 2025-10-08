@@ -6,13 +6,27 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Loader2 } from 'lucide-react';
+import type { MockSettings } from '@/lib/mockApi';
 
 export default function Settings() {
   const { data: settings, isLoading } = useAdminSettings();
   const updateSettings = useUpdateSettings();
-  const [formData, setFormData] = useState(settings || {});
+  const [formData, setFormData] = useState<MockSettings>({
+    site_name: 'Patriot Desa',
+    maintenance_mode: false,
+    max_free_queries: 5,
+    subscription_price: 99000,
+    email_notifications: true,
+    auto_backup: true,
+  });
+
+  useEffect(() => {
+    if (settings) {
+      setFormData(settings);
+    }
+  }, [settings]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

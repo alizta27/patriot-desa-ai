@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Card } from "@/components/ui/card";
 import { Send, Crown, Menu, EllipsisVertical } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -49,6 +48,7 @@ interface ChatInterfaceProps {
   onSendMessage: () => void;
   onChatCreated: (chatId: string) => void;
   openSidebar: () => void;
+  closeSidebar: () => void;
   isSidebarOpen: boolean;
   onRenameChat?: (chatId: string, newTitle: string) => void;
   onDeleteChat?: (chatId: string) => void;
@@ -70,6 +70,7 @@ export function ChatInterface({
   isSidebarOpen,
   onRenameChat,
   onDeleteChat,
+  closeSidebar,
 }: ChatInterfaceProps) {
   const device = useDeviceType();
   const navigate = useNavigate();
@@ -303,7 +304,10 @@ export function ChatInterface({
   return (
     <main className="flex-1 flex flex-col h-screen bg-background relative">
       {!isSidebarOpen || device !== "mobile" ? null : (
-        <div className="h-full absolute bg-gray-600/50 top-0 left-0 right-0"></div>
+        <div
+          onClick={closeSidebar}
+          className="h-full absolute bg-gray-600/50 top-0 left-0 right-0 z-[999999]"
+        ></div>
       )}
 
       {/* Header */}

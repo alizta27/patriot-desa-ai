@@ -213,6 +213,7 @@ const Chat = () => {
         ) : null}
         <div className="flex-1 flex flex-col min-w-0">
           <ChatInterface
+            closeSidebar={closeSidebar}
             isSidebarOpen={isSidebarOpen}
             openSidebar={openSidebar}
             chatId={currentChatId}

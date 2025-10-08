@@ -1,0 +1,64 @@
+### 🧠 Prompt for Replit AI
+
+> **Task:** Redesign and rebuild my existing Admin Dashboard UI to make it look like a professional modern admin dashboard.
+>
+> **Goals:**
+>
+> 1. Make the UI visually polished, consistent, and responsive.
+> 2. Add a left sidebar (for navigation), a top header (for title, profile, and logout), and clean main content sections.
+> 3. Include common admin dashboard features and missing UI parts that would enhance usability (like search bar, notifications, analytics cards, data tables, etc.).
+> 4. Add proper layout with menu button toggle for sidebar (mobile-friendly).
+> 5. Include logout button functionality (for now, mock only).
+> 6. Replace all API calls with mock APIs (fetch from JSON or placeholder functions) — I’ll connect real APIs later.
+> 7. Keep the code modular, reusable, and cleanly structured.
+>
+> **Tech Preferences (adjust if needed):**
+>
+> * Frontend: React (with Tailwind CSS or your preferred styling system)
+> * Use a component-based structure (e.g., `Sidebar`, `Header`, `DashboardHome`, `UsersPage`, `SettingsPage`, etc.)
+> * Include routing (e.g., React Router) for navigating between pages.
+> * If using icons, use something like `lucide-react` or `react-icons`.
+> * Optional: Add simple charts using `recharts` or `chart.js` for analytics/overview.
+>
+> **Pages inside admin dashboard:**
+>
+> * Dashboard (overview with cards, charts, quick stats)
+> * Users management (table of users, add/edit/delete mock functionality)
+> * Settings (account settings, system configuration)
+> * Logs or Activity (optional but good to include)
+>
+> **Visual Style References:**
+>
+> * Clean, modern admin layout (e.g., like TailAdmin, Shadcn UI, or MUI dashboards)
+> * Light and dark mode support if easy
+>
+> **Output Expectations:**
+>
+> * A complete working React project or updated version of my current admin dashboard UI
+> * Include sample data in mock APIs
+> * Organized folder structure: `/components`, `/pages`, `/api/mock`, `/assets`, etc.
+> * Well-commented code, easy to extend later.
+>
+> **Example structure suggestion:**
+>
+> ```
+> src/
+>   components/
+>     Sidebar.jsx
+>     Header.jsx
+>     Card.jsx
+>   pages/
+>     Dashboard.jsx
+>     Users.jsx
+>     Settings.jsx
+>   api/
+>     mock/
+>       users.js
+>       stats.js
+>   App.jsx
+>   main.jsx
+>   index.css
+> ```
+>
+> **Final Objective:**
+> Create a professional, clean, and user-friendly admin dashboard layout ready for API integration later.

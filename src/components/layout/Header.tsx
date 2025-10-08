@@ -23,12 +23,12 @@ const Header = () => {
         </Link>
 
         <nav className="hidden md:flex items-center gap-6">
-          <button
-            onClick={() => scrollToSection("about")}
+          <Link
+            to="/about"
             className="text-sm font-medium text-foreground/80 hover:text-foreground transition-colors"
           >
-            About
-          </button>
+            Tentang Kami
+          </Link>
           <button
             onClick={() => scrollToSection("pricing")}
             className="text-sm font-medium text-foreground/80 hover:text-foreground transition-colors"

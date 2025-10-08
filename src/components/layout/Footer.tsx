@@ -48,12 +48,12 @@ const Footer = () => {
                 </Link>
               </li>
               <li>
-                <button
-                  onClick={() => scrollToSection("about")}
+                <Link
+                  to="/about"
                   className="text-muted-foreground hover:text-primary transition-colors"
                 >
-                  About
-                </button>
+                  Tentang Kami
+                </Link>
               </li>
               <li>
                 <button
@@ -77,6 +77,22 @@ const Footer = () => {
                   className="text-muted-foreground hover:text-primary transition-colors"
                 >
                   Privacy Policy
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/cookies-policy"
+                  className="text-muted-foreground hover:text-primary transition-colors"
+                >
+                  Kebijakan Cookie
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/terms-of-use"
+                  className="text-muted-foreground hover:text-primary transition-colors"
+                >
+                  Syarat Penggunaan
                 </Link>
               </li>
             </ul>

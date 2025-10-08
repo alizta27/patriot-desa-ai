@@ -12,6 +12,9 @@ import AdminUsers from "./pages/admin/Users";
 import NotFound from "./pages/NotFound";
 import AdminLogin from "./pages/admin/AdminLogin";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
+import About from "./pages/About";
+import CookiesPolicy from "./pages/CookiesPolicy";
+import TermsOfUse from "./pages/TermsOfUse";
 import { ReactQueryProvider } from "./providers";
 
 const App = () => (
@@ -27,6 +30,9 @@ const App = () => (
           <Route path="/chat" element={<Chat />} />
           <Route path="/subscription" element={<Subscription />} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/cookies-policy" element={<CookiesPolicy />} />
+          <Route path="/terms-of-use" element={<TermsOfUse />} />
           <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/admin/users" element={<AdminUsers />} />

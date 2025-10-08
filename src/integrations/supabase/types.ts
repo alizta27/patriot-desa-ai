@@ -78,6 +78,24 @@ export type Database = {
           }
         ];
       };
+      pre_registrations: {
+        Row: {
+          id: number;
+          email: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: number;
+          email: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: number;
+          email?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
       profiles: {
         Row: {
           created_at: string;

@@ -1,0 +1,128 @@
+# 🚀 Replit AI Prompt — *Patriot Desa Chat App (ChatGPT-Style UI, Bahasa Indonesia)*
+
+**Role instruction (very important):** You are a **senior full-stack programmer**. Think carefully about architecture, accessibility, performance, error handling, security, and developer ergonomics. Produce production-ready, well-structured code and clear integration steps. When you propose code, include reasons for important design choices and list any trade-offs or assumptions.
+
+I’ve built a simple AI chat app in **React**, using **Supabase** (Edge Functions + React Query) and the **ChatGPT API**.  
+The app’s purpose is to help people in **Indonesia** explore and discuss topics related to *“Desa”* (villages).  
+The app name is **Patriot Desa**.
+
+The core functionality works — users can send and receive messages, and I already have **streaming messages with a typing animation**.  
+I want to **redesign and enhance the UI/UX** to make it look and feel like **ChatGPT**, but localized and branded for **Patriot Desa**.
+
+---
+
+### 🎨 Design & Layout
+
+* The layout should **closely resemble ChatGPT’s interface**, including:
+
+  * A **left sidebar** for chat history, logo, and navigation.  
+  * A **main chat area** for messages.  
+  * A **top header** showing the model name (e.g., “Patriot Desa”) and simple controls.  
+  * A **bottom chat input area** that expands as you type, with a **send button** (paper plane icon).
+
+---
+
+### 🧩 Sidebar Behavior (Responsive & Collapsible)
+
+* The sidebar must be **collapsible** and **responsive**:
+
+  * On **desktop/web**, collapsing should **shrink** the sidebar (show icons only), not hide it completely.  
+  * On **mobile**, collapsing should **hide the sidebar entirely**, leaving only a **toggle button** (like ChatGPT’s mobile view).  
+  * The **toggle button** should always remain visible.
+
+* Sidebar contents:
+  * **Patriot Desa logo** (use my logo — placeholder path is fine).  
+  * Button to start a **“Percakapan Baru”** (New Chat).  
+  * List of previous chats (“Riwayat Percakapan”).  
+  * **Pengaturan** (Settings) and **Keluar** (Logout) buttons pinned at the bottom.
+
+---
+
+### 💬 Chat Features
+
+* **Edit and resend messages**:
+  * When hovering over a user message, show an “Edit” (✏️) icon.  
+  * After editing, user can **“Kirim Ulang”** (Resend) the updated message — update stored chat history and replace the AI response for that message.
+
+* **File and image uploads**:
+  * Users can upload images or files.  
+  * Show thumbnails for images, icons for other file types.  
+  * Use **Supabase Storage** for uploads and serving.  
+  * Include upload progress UI and handle large files gracefully (client-side size checks and friendly error messages).
+
+* Keep the **existing streaming message typing animation** (don’t modify).
+
+* Add **loading indicators**, **error messages**, and **retry options** — all in Bahasa Indonesia, e.g.:
+  * “Mengirim pesan…”  
+  * “Terjadi kesalahan. Coba lagi.”  
+  * “Sedang memuat…”
+
+---
+
+### ⚙️ Technical Stack & Structure
+
+* Use **React Query** for fetching and mutating messages (caching, optimistic updates, retries).  
+* Store chat history per user in **Supabase** (Postgres + Storage).  
+* Keep a clean modular structure with components:
+  * `<ChatMessage />`  
+  * `<ChatInput />`  
+  * `<ChatSidebar />`  
+  * `<ChatHeader />`  
+  * `<FileUpload />`
+
+* Use **Tailwind CSS** for responsive design and **Framer Motion** for smooth animations.  
+* Use **Lucide React** or similar icons (menu, send, edit, file, etc.).  
+* Keep all **comments and variable names in English**, but all **UI text and labels in Bahasa Indonesia**.  
+* Accessibility (a11y): ensure keyboard navigation, ARIA labels for important controls, readable contrast, and focus rings.  
+* Security & privacy: validate file types/sizes client-side, validate and sanitize inputs server-side (Edge Functions), and use signed Supabase URLs for file access.  
+* Error handling: surface clear Bahasa Indonesia messages, log server errors, and provide retry flows for failed uploads/requests.
+
+---
+
+### 🧠 Theming & Branding
+
+* Apply **Patriot Desa’s color palette** (replace ChatGPT’s gray/green theme).
+  * Define custom colors in `tailwind.config.js` (I will provide hex codes).
+* Use the **Patriot Desa logo** in the sidebar header and favicon.
+* Add **dark/light mode toggle** (in Bahasa Indonesia, e.g. “Mode Terang / Mode Gelap”), with state saved across sessions.
+
+---
+
+### ✅ Deliverables
+
+1. Responsive ChatGPT-style React UI branded for **Patriot Desa**.  
+2. Collapsible sidebar with different behavior on desktop vs. mobile.  
+3. Message editing and re-sending features (with backend update flow).  
+4. File/image upload with **Supabase Storage** integration and progress indicators.  
+5. Error, loading, and notification texts in **Bahasa Indonesia**.  
+6. Clean, modular React + Tailwind code with **Framer Motion** animations.  
+7. Implementation notes: Tailwind theme snippet, example `tailwind.config.js`, Supabase storage integration example, React Query hooks, and sample Edge Function for message handling (secure, minimal).
+
+---
+
+### 💡 Implementation guidance for the assistant (senior dev)
+
+* Provide component code examples (React + TypeScript preferred) for the key components listed above. Keep code modular and testable.  
+* Include `tailwind.config.js` snippet showing where to add the Patriot Desa palette and dark mode config.  
+* Provide sample hooks using React Query (`useChats`, `useSendMessage`, `useEditMessage`, `useUploadFile`) with clear optimistic update patterns and rollback on failure.  
+* Provide an example Supabase Edge Function (TypeScript) or server endpoint showing how to:
+  * receive an edited/resend request,  
+  * call the ChatGPT API,  
+  * persist both user message and assistant response in Postgres, and  
+  * return streaming-compatible response metadata (but do not change the existing streaming logic).  
+* Show how to integrate Supabase Storage upload from the client (signed upload URL or client SDK), and how to store file metadata in the chat message.  
+* Describe accessibility considerations and keyboard shortcuts (e.g., `Ctrl/Cmd + Enter` to send, `Esc` to cancel edit).  
+* Include short tests/examples (unit or integration) or at least testing strategy suggestions for critical pieces (file upload, editing flow, React Query optimistic updates).  
+* Clearly list assumptions (e.g., auth is present, streaming is already implemented, browser support, max upload size) and any required environment variables.
+
+---
+
+### 💬 Notes & constraints
+
+* Authentication is already handled — focus only on frontend and UX.  
+* **Do not modify** the existing message streaming/typing animation logic.  
+* Prioritize a **familiar ChatGPT-style experience**, localized for **Indonesian users** with **Patriot Desa** branding and colors.  
+* Keep all UI strings in Bahasa Indonesia; keep code comments and identifiers in English.
+
+---
+

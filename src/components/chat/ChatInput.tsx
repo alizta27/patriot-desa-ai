@@ -8,8 +8,8 @@ import { toast } from "@/components/ui/sonner-api";
 interface ChatInputProps {
   value: string;
   onChange: (value: string) => void;
-  onSubmit: (e: React.FormEvent) => void;
-  onFileUpload?: (files: File[]) => void;
+  onSubmit: (e: React.FormEvent, fileUrls?: string[]) => void;
+  onFileUpload?: (files: File[]) => Promise<string[]>;
   isLoading?: boolean;
   disabled?: boolean;
   placeholder?: string;
@@ -49,8 +49,9 @@ export function ChatInput({
     // Submit on Enter (without Shift)
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      if (!disabled && !isLoading && value.trim()) {
-        onSubmit(e);
+      // Use same flow as button submit to include file uploads
+      if (!disabled && !isLoading && (value.trim() || uploadedFiles.length > 0)) {
+        handleSubmitWithFiles(e as unknown as React.FormEvent);
       }
     }
   };
@@ -106,17 +107,27 @@ export function ChatInput({
     });
   };
 
-  const handleSubmitWithFiles = (e: React.FormEvent) => {
+  const handleSubmitWithFiles = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Can't submit if no text and no files
+    if (!value.trim() && uploadedFiles.length === 0) return;
+
+    let fileUrls: string[] = [];
+
+    // Handle file uploads first if present
     if (uploadedFiles.length > 0 && onFileUpload) {
-      onFileUpload(uploadedFiles.map(f => f.file));
+      try {
+        fileUrls = await onFileUpload(uploadedFiles.map(f => f.file));
+        setUploadedFiles([]);
+      } catch (error) {
+        console.error("File upload failed:", error);
+        return; // Don't submit if file upload fails
+      }
     }
     
-    if (value.trim() || uploadedFiles.length > 0) {
-      onSubmit(e);
-      setUploadedFiles([]);
-    }
+    // Submit the message with file URLs
+    onSubmit(e, fileUrls);
   };
 
   // Cleanup previews on unmount

@@ -167,9 +167,12 @@ const ChatNew = () => {
     setMessages((data as Message[]) || []);
   };
 
-  const handleSendMessage = async (e: React.FormEvent) => {
+  const handleSendMessage = async (e: React.FormEvent, fileUrls: string[] = []) => {
     e.preventDefault();
-    if (!inputMessage.trim() || isLoading || !userId) return;
+    
+    // Must have either text or file URLs
+    if (!inputMessage.trim() && fileUrls.length === 0) return;
+    if (isLoading || !userId) return;
 
     // Check usage limit for free users
     if (subscriptionStatus === "free" && usageCount >= 5) {
@@ -177,7 +180,24 @@ const ChatNew = () => {
       return;
     }
 
-    const userMessageContent = inputMessage.trim();
+    let userMessageContent = inputMessage.trim();
+    
+    // Append file URLs to message if any
+    if (fileUrls.length > 0) {
+      const fileLinks = fileUrls.map(url => {
+        const fileName = url.split('/').pop();
+        const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(url);
+        return isImage ? `![${fileName}](${url})` : `[${fileName}](${url})`;
+      }).join('\n');
+      
+      userMessageContent = userMessageContent 
+        ? `${userMessageContent}\n\n${fileLinks}` 
+        : fileLinks;
+    }
+    
+    // Must have content (text or files) to send
+    if (!userMessageContent) return;
+    
     setInputMessage("");
     setIsLoading(true);
     setIsStreaming(true);
@@ -202,7 +222,7 @@ const ChatNew = () => {
         queryClient.invalidateQueries({ queryKey: chatKeys.chats(userId) });
       }
 
-      // Save user message
+      // Save user message with file links
       const { data: savedUserMessage, error: userMsgError } = await supabase
         .from("chat_messages")
         .insert({
@@ -301,18 +321,66 @@ const ChatNew = () => {
     }
   };
 
+  const handleFileUpload = async (files: File[]): Promise<string[]> => {
+    if (!userId) {
+      toast.error("Anda harus login untuk mengunggah file");
+      return [];
+    }
+
+    try {
+      const uploadedUrls: string[] = [];
+
+      for (const file of files) {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${userId}/${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
+        
+        const { data, error } = await supabase.storage
+          .from('chat-files')
+          .upload(fileName, file);
+
+        if (error) {
+          console.error("Upload error:", error);
+          toast.error(`Gagal mengunggah ${file.name}`);
+          continue;
+        }
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('chat-files')
+          .getPublicUrl(data.path);
+
+        uploadedUrls.push(publicUrl);
+      }
+
+      if (uploadedUrls.length > 0) {
+        toast.success(`${uploadedUrls.length} file berhasil diunggah`);
+        return uploadedUrls;
+      }
+
+      return [];
+    } catch (error) {
+      console.error("File upload error:", error);
+      toast.error("Terjadi kesalahan saat mengunggah file");
+      return [];
+    }
+  };
+
   const handleEditMessage = async (messageId: string, newContent: string) => {
     if (!currentChatId || !userId) return;
 
     try {
       // Update the message in database
-      await supabase
+      const { error } = await supabase
         .from("chat_messages")
         .update({ message: newContent })
         .eq("id", messageId);
 
-      // Reload messages
-      await loadMessages(currentChatId);
+      if (error) throw error;
+
+      // Update local state
+      setMessages(prev => prev.map(msg => 
+        msg.id === messageId ? { ...msg, message: newContent } : msg
+      ));
+
       toast.success("Pesan berhasil diubah");
     } catch (error) {
       console.error("Error editing message:", error);
@@ -323,29 +391,98 @@ const ChatNew = () => {
   const handleResendMessage = async (messageId: string, content: string) => {
     if (!currentChatId || !userId) return;
 
+    setIsLoading(true);
+    setIsStreaming(true);
+
     try {
-      // Delete messages after this one
+      // Find the message index
       const messageIndex = messages.findIndex((m) => m.id === messageId);
       if (messageIndex === -1) return;
 
+      // Delete all messages after this one (including AI responses)
       const messagesToDelete = messages.slice(messageIndex + 1);
       for (const msg of messagesToDelete) {
         await supabase.from("chat_messages").delete().eq("id", msg.id);
       }
 
-      // Update the user message
+      // Update the user message with new content
       await supabase
         .from("chat_messages")
         .update({ message: content })
         .eq("id", messageId);
 
-      // Reload and resend
-      await loadMessages(currentChatId);
-      setInputMessage(content);
-      await handleSendMessage(new Event("submit") as any);
+      // Update local state to show only messages up to and including edited one
+      const updatedMessages = messages.slice(0, messageIndex).concat({
+        ...messages[messageIndex],
+        message: content
+      });
+      setMessages(updatedMessages);
+
+      // Get conversation history for AI context
+      const contextMessages = updatedMessages.map((msg) => ({
+        role: msg.role,
+        content: msg.message,
+      }));
+
+      // Call AI with updated context
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat-ai`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify({ messages: contextMessages }),
+        }
+      );
+
+      if (!response.ok) throw new Error("AI response failed");
+
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder();
+      let assistantResponse = "";
+
+      if (reader) {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          const chunk = decoder.decode(value, { stream: true });
+          assistantResponse += chunk;
+          setStreamingMessage(assistantResponse);
+        }
+      }
+
+      setStreamingMessage("");
+      setIsStreaming(false);
+
+      // Save new assistant response
+      const { data: savedAssistantMessage, error: assistantMsgError } = await supabase
+        .from("chat_messages")
+        .insert({
+          chat_id: currentChatId,
+          role: "assistant",
+          message: assistantResponse,
+        })
+        .select()
+        .single();
+
+      if (assistantMsgError) throw assistantMsgError;
+
+      setMessages((prev) => [...prev, savedAssistantMessage as Message]);
+      toast.success("Pesan berhasil dikirim ulang");
+
     } catch (error) {
       console.error("Error resending message:", error);
       toast.error("Gagal mengirim ulang pesan");
+      setStreamingMessage("");
+      setIsStreaming(false);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -452,6 +589,7 @@ const ChatNew = () => {
           value={inputMessage}
           onChange={setInputMessage}
           onSubmit={handleSendMessage}
+          onFileUpload={handleFileUpload}
           isLoading={isLoading || isStreaming}
           disabled={isLoading || isStreaming}
           placeholder={

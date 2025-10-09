@@ -12,6 +12,7 @@ import AdminDashboard from "./pages/admin/Dashboard";
 import AdminSettings from "./pages/admin/Settings";
 import AdminUsers from "./pages/admin/Users";
 import Chat from "./pages/Chat";
+import ChatNew from "./pages/ChatNew";
 import CookiesPolicy from "./pages/CookiesPolicy";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
@@ -20,36 +21,39 @@ import Onboarding from "./pages/Onboarding";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import Subscription from "./pages/Subscription";
 import TermsOfUse from "./pages/TermsOfUse";
-import { ReactQueryProvider } from "./providers";
+import { ReactQueryProvider, ThemeProvider } from "./providers";
 
 const App = () => (
-  <ReactQueryProvider>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/onboarding" element={<Onboarding />} />
-          <Route path="/chat" element={<Chat />} />
-          <Route path="/subscription" element={<Subscription />} />
-          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/cookies-policy" element={<CookiesPolicy />} />
-          <Route path="/terms-of-use" element={<TermsOfUse />} />
-          <Route path="/admin/login" element={<AdminLogin />} />
-          <Route path="/admin" element={<AdminLayout />}>
-            <Route path="dashboard" element={<AdminDashboard />} />
-            <Route path="users" element={<AdminUsers />} />
-            <Route path="activity" element={<AdminActivity />} />
-            <Route path="settings" element={<AdminSettings />} />
-          </Route>
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
-  </ReactQueryProvider>
+  <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+    <ReactQueryProvider>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/onboarding" element={<Onboarding />} />
+            <Route path="/chat" element={<ChatNew />} />
+          <Route path="/chat-old" element={<Chat />} />
+            <Route path="/subscription" element={<Subscription />} />
+            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/cookies-policy" element={<CookiesPolicy />} />
+            <Route path="/terms-of-use" element={<TermsOfUse />} />
+            <Route path="/admin/login" element={<AdminLogin />} />
+            <Route path="/admin" element={<AdminLayout />}>
+              <Route path="dashboard" element={<AdminDashboard />} />
+              <Route path="users" element={<AdminUsers />} />
+              <Route path="activity" element={<AdminActivity />} />
+              <Route path="settings" element={<AdminSettings />} />
+            </Route>
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
+    </ReactQueryProvider>
+  </ThemeProvider>
 );
 
 export default App;

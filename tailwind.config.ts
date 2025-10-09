@@ -31,6 +31,12 @@ export default {
           light: "hsl(var(--primary-light))",
           dark: "hsl(var(--primary-dark))",
         },
+        "patriot": {
+          DEFAULT: "#DC2626", // Red-600 - Patriot red
+          light: "#FCA5A5",   // Red-300
+          dark: "#991B1B",    // Red-800
+          foreground: "#FFFFFF",
+        },
         secondary: {
           DEFAULT: "hsl(var(--secondary))",
           foreground: "hsl(var(--secondary-foreground))",
